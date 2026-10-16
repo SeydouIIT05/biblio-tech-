@@ -20,7 +20,13 @@ export class App {
 
   constructor() {
     // La page est prérendue sans session : on ne relit le navigateur qu'après l'hydratation.
-    afterNextRender(() => this.store.restore());
+    afterNextRender(() => {
+      this.store.restore();
+      // Un autre poste a pu modifier les données pendant que l'onglet était en arrière-plan.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') void this.store.pull();
+      });
+    });
     effect(() => {
       const connected = this.store.session() !== null;
       if (typeof document !== 'undefined') {

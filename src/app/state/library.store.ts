@@ -1,4 +1,5 @@
 import { Inject, Injectable, Optional, Signal, WritableSignal, computed, signal } from '@angular/core';
+import { LIBRARY_BACKEND, LibraryBackend } from './backend';
 import {
   LIBRARY_PERSISTENCE,
   LibraryPersistence,
@@ -52,6 +53,17 @@ const TOAST_DURATION = 4200;
 const VIEWS: ViewId[] = ['cat', 'add', 'emp', 'res', 'pen', 'sta'];
 const STORAGE_FULL =
   'Stockage du navigateur plein : les dernières modifications ne seront pas conservées au rechargement.';
+const CONFLICT =
+  'Un autre poste vient de modifier les données : l’affichage est à jour, refaites votre dernière opération si besoin.';
+
+function demoState(): LibraryState {
+  return {
+    members: MEMBERS.map((m) => ({ ...m })),
+    books: BOOKS.map((b) => ({ ...b })),
+    loans: LOANS.map((l) => ({ ...l })),
+    reservations: RESERVATIONS.map((r) => ({ ...r })),
+  };
+}
 
 interface SavedSession extends Session {
   view: ViewId;
@@ -75,18 +87,23 @@ function isLibraryState(value: unknown): value is LibraryState {
 @Injectable({ providedIn: 'root' })
 export class LibraryStore {
   private readonly persistence: LibraryPersistence | null;
+  private readonly backend: LibraryBackend | null;
   private readonly _restored: WritableSignal<boolean>;
   private remember = true;
+  private remoteVersion = 0;
+  private reachable = false;
+  private pushing = false;
+  private pushAgain = false;
 
   /** Faux tant que l'état enregistré dans le navigateur n'a pas été relu. */
   readonly restored: Signal<boolean>;
 
-  private readonly _members = signal<Member[]>(MEMBERS.map((m) => ({ ...m })));
-  private readonly _books = signal<Book[]>(BOOKS.map((b) => ({ ...b })));
-  private readonly _loans = signal<Loan[]>(LOANS.map((l) => ({ ...l })));
-  private readonly _reservations = signal<Reservation[]>(
-    RESERVATIONS.map((r) => ({ ...r })),
-  );
+  private readonly demo = demoState();
+  private readonly _members = signal<Member[]>(this.demo.members);
+  private readonly _books = signal<Book[]>(this.demo.books);
+  private readonly _loans = signal<Loan[]>(this.demo.loans);
+  private readonly _reservations = signal<Reservation[]>(this.demo.reservations);
+  private readonly _synced = signal(false);
 
   private readonly _session = signal<Session | null>(null);
   private readonly _view = signal<ViewId>('cat');
@@ -111,6 +128,8 @@ export class LibraryStore {
   readonly loanMessage = this._loanMessage.asReadonly();
   readonly addMessage = this._addMessage.asReadonly();
   readonly stamp = this._stamp.asReadonly();
+  /** Vrai quand le dernier échange avec le serveur a réussi. */
+  readonly synced = this._synced.asReadonly();
 
   readonly selectedBook = computed<Book | null>(() => {
     const id = this._selectedBookId();
@@ -138,23 +157,20 @@ export class LibraryStore {
 
   constructor(
     @Optional() @Inject(LIBRARY_PERSISTENCE) persistence: LibraryPersistence | null = null,
+    @Optional() @Inject(LIBRARY_BACKEND) backend: LibraryBackend | null = null,
   ) {
     this.persistence = persistence;
+    this.backend = backend;
     this._restored = signal(persistence === null);
     this.restored = this._restored.asReadonly();
   }
 
-  /** Relit les données, la session et la vue enregistrées par le navigateur. */
+  /** Relit les données, la session et la vue enregistrées par le navigateur, puis interroge le serveur. */
   restore(): void {
     if (this._restored() || !this.persistence) return;
     const { local, session } = this.persistence;
     const data = readJson(local, STORAGE_KEYS.data);
-    if (isLibraryState(data)) {
-      this._members.set(data.members);
-      this._books.set(data.books);
-      this._loans.set(data.loans);
-      this._reservations.set(data.reservations);
-    }
+    if (isLibraryState(data)) this.applyData(data);
     const kept = readJson(local, STORAGE_KEYS.session);
     const saved = isSavedSession(kept) ? kept : readJson(session, STORAGE_KEYS.session);
     if (isSavedSession(saved)) {
@@ -163,13 +179,87 @@ export class LibraryStore {
       if (VIEWS.includes(saved.view)) this._view.set(saved.view);
     }
     this._restored.set(true);
+    void this.pull();
+  }
+
+  /** Récupère l'état partagé du serveur ; une base vide reçoit les données de ce poste. */
+  async pull(): Promise<void> {
+    if (!this.backend || !this._restored() || this.pushing) return;
+    const remote = await this.backend.load();
+    if (!remote) {
+      this._synced.set(false);
+      return;
+    }
+    if (this.pushing) return;
+    this.reachable = true;
+    this._synced.set(true);
+    if (!isLibraryState(remote.data)) {
+      this.remoteVersion = remote.version;
+      await this.push();
+      return;
+    }
+    if (remote.version === this.remoteVersion) return;
+    this.remoteVersion = remote.version;
+    this.applyData(remote.data);
+    this.writeLocal();
+  }
+
+  private async push(): Promise<void> {
+    if (!this.backend || !this.reachable) return;
+    if (this.pushing) {
+      this.pushAgain = true;
+      return;
+    }
+    this.pushing = true;
+    try {
+      do {
+        this.pushAgain = false;
+        const result = await this.backend.save(this.remoteVersion, this.snapshot());
+        if (!result) {
+          this._synced.set(false);
+          return;
+        }
+        this._synced.set(true);
+        if (!result.ok) {
+          this.remoteVersion = result.current.version;
+          if (isLibraryState(result.current.data)) this.applyData(result.current.data);
+          this.writeLocal();
+          this.showToast(CONFLICT);
+          return;
+        }
+        this.remoteVersion = result.version;
+      } while (this.pushAgain);
+    } finally {
+      this.pushing = false;
+    }
+  }
+
+  private applyData(data: LibraryState): void {
+    this._members.set(data.members);
+    this._books.set(data.books);
+    this._loans.set(data.loans);
+    this._reservations.set(data.reservations);
+  }
+
+  private writeLocal(): boolean {
+    return !this.persistence || writeJson(this.persistence.local, STORAGE_KEYS.data, this.snapshot());
   }
 
   private saveData(): void {
-    if (!this.persistence || !this._restored()) return;
-    if (!writeJson(this.persistence.local, STORAGE_KEYS.data, this.snapshot())) {
-      this.showToast(STORAGE_FULL);
-    }
+    if (!this._restored()) return;
+    if (!this.writeLocal()) this.showToast(STORAGE_FULL);
+    void this.push();
+  }
+
+  /** Remet les données de démonstration, ici et sur le serveur. */
+  resetDemo(): void {
+    this.applyData(demoState());
+    this._selectedBookId.set(null);
+    this._stamp.set(null);
+    this._loanMessage.set('');
+    this._addMessage.set('');
+    this.showToast('Données de démonstration rétablies.');
+    this.saveData();
   }
 
   private saveSession(): void {

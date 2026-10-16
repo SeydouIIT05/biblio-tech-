@@ -12,7 +12,7 @@
   <button type="button" data-v="sta" [class.on]="store.view() === 'sta'" (click)="store.setView('sta')"><span class="ni"><svg class="i" aria-hidden="true"><use href="#chart"/></svg>Statistiques</span></button>
   <button type="button" data-v="out" class="mo" (click)="store.leave()">Déconnexion</button>
  </nav>
- <div class="me"><strong>{{ session.user }}</strong><span>{{ session.place }}</span><br>vendredi 16 octobre 2026<button type="button" class="out" (click)="store.leave()">Se déconnecter</button></div>
+ <div class="me"><strong>{{ session.user }}</strong><span>{{ session.place }}</span><br>vendredi 16 octobre 2026<span class="sy" [class.on]="store.synced()">{{ store.synced() ? 'Données partagées sur le serveur' : 'Données gardées dans ce navigateur' }}</span><button type="button" class="out" (click)="store.leave()">Se déconnecter</button><button type="button" class="out" (click)="store.resetDemo()">Réinitialiser la démo</button></div>
 </aside>
 <main>
 @switch (store.view()) {
