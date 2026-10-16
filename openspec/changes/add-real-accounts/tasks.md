@@ -20,4 +20,4 @@
 ## 3. Mise en production
 
 - [x] 3.1 Vérifier en local : tests Angular et API, build de production, parcours inscription, connexion, rechargement, déconnexion
-- [ ] 3.2 Sur le site en ligne, créer le compte de démonstration depuis « Inscription » et vérifier la connexion depuis un second navigateur
+- [x] 3.2 Sur le site en ligne, créer le compte de démonstration depuis « Inscription » et vérifier la connexion depuis un second navigateur
