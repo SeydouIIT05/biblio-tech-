@@ -1,0 +1,42 @@
+<section id="cat">
+ <h1>Catalogue</h1><p class="sub">{{ totals().titles }} titres et {{ totals().copies }} exemplaires, dont {{ totals().available }} disponibles au comptoir. {{ rows().length }} affichés.</p>
+ <div class="bar">
+  <input type="search" placeholder="Titre, auteur ou cote" aria-label="Rechercher" [value]="query()" (input)="query.set(inputValue($event))">
+  <div class="seg">
+   @for (segment of segments; track segment) {
+    <button type="button" [class.on]="filter() === segment" (click)="filter.set(segment)">{{ segment }}</button>
+   }
+  </div>
+  <select aria-label="Catégorie" [value]="category()" (change)="category.set(inputValue($event))">
+   @for (category of categories(); track category) {
+    <option [value]="category">{{ category }}</option>
+   }
+  </select>
+  <div class="seg">
+   @for (item of layouts; track item.label) {
+    <button type="button" [class.on]="layout() === item.label" (click)="layout.set(item.label)"><svg class="i" aria-hidden="true"><use [attr.href]="'#' + item.icon"/></svg>{{ item.label }}</button>
+   }
+  </div>
+ </div>
+ @if (layout() === 'Tableau') {
+ <div class="tw"><table><thead><tr><th>Titre</th><th>Cote</th><th>Catégorie</th><th>Exemplaires</th><th>Statut</th></tr></thead><tbody>
+  @for (book of rows(); track book.id) {
+   <tr class="k" (click)="open(book.id)">
+    <td><div class="tt"><app-cover [book]="book" variant="th"/><div><div class="t">{{ book.t }}</div><div class="a">{{ book.a }}</div></div></div></td>
+    <td>{{ book.c }}</td><td>{{ book.k }}</td><td>{{ available(book) }} sur {{ book.n }}</td>
+    <td><span class="st" [class]="status(book).c">{{ status(book).t }}</span></td>
+   </tr>
+  } @empty {
+   <tr><td colspan="5" class="empty">Aucun livre ne correspond à cette recherche.</td></tr>
+  }
+ </tbody></table></div>
+ } @else {
+ <div class="mos">
+  @for (book of rows(); track book.id) {
+   <button type="button" class="bk" (click)="open(book.id)"><app-cover [book]="book"/><div class="t">{{ book.t }}</div><div class="a">{{ book.a }}</div><span class="st" [class]="status(book).c">{{ status(book).t }}</span></button>
+  } @empty {
+   <p class="empty">Aucun livre ne correspond à cette recherche.</p>
+  }
+ </div>
+ }
+</section>

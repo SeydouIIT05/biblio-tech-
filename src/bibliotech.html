@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BiblioTech — Gestion de bibliothèque</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--nuit:#151B26;--nuit2:#252E3E;--rouille:#B4441F;--papier:#EDEFF2;--trait:#CBD0D8;--encre:#171C26;--gris:#5C6576;--vert:#2D6A4F;--ocre:#8F6609;--bleu:#2F4F8F;--serif:Newsreader,Georgia,serif;--sans:"Hanken Grotesk",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;border-radius:0}
+body{font:14px/1.45 var(--sans);color:var(--encre);background:var(--papier);display:grid;grid-template-columns:224px 1fr;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--rouille);outline-offset:2px}
+aside{background:var(--nuit);color:#C9CFDA;padding:24px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;padding:0 20px 28px;font:600 24px var(--serif);color:#fff}
+.logo i{width:28px;height:28px;background:var(--rouille);display:grid;place-items:center;font:600 17px var(--serif);font-style:normal}
+nav button{display:flex;justify-content:space-between;width:100%;padding:11px 20px;cursor:pointer;background:none;border:0;border-left:3px solid transparent;text-align:left;color:inherit}
+nav button:hover,nav button.on{background:var(--nuit2)}
+nav button.on{border-color:var(--rouille);color:#fff}
+nav button:focus-visible{outline-color:#fff;outline-offset:-4px}
+nav b{font-weight:600;color:#F29470}
+.me{margin-top:auto;padding:16px 20px 0;border-top:1px solid var(--nuit2);font-size:12.5px;color:#8E97A8}
+.me strong{display:block;color:#fff;font-weight:500}
+main{padding:32px 40px 48px;min-width:0}
+h1{font:400 34px/1.15 var(--serif)}
+h2{font:600 20px var(--serif);margin:32px 0 12px}
+.sub{color:var(--gris);margin:6px 0 24px}
+.bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+input,select{background:#fff;border:1px solid var(--trait);padding:9px 12px;min-width:0}
+input:focus{border-color:var(--rouille)}
+.bar input{flex:1;min-width:220px;max-width:380px}
+.seg{display:flex}
+.seg button{background:#fff;border:1px solid var(--trait);margin-left:-1px;padding:9px 16px;cursor:pointer}
+.seg button.on{background:var(--nuit);border-color:var(--nuit);color:#fff;position:relative}
+.btn{background:var(--rouille);color:#fff;border:0;padding:10px 18px;font-weight:600;cursor:pointer}
+.btn:hover{background:#963816}
+.ghost{background:#fff;border:1px solid var(--encre);padding:6px 12px;cursor:pointer;font-weight:500}
+.ghost:hover{background:var(--encre);color:#fff}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--trait)}
+th{text-align:left;font-weight:600;font-size:12.5px;color:var(--gris);padding:10px 14px;border-bottom:2px solid var(--encre);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--trait);vertical-align:middle}
+tr.k{cursor:pointer}tr.k:hover td{background:#F6F7F9}
+td.n{text-align:right}th.n{text-align:right}
+.t{font:600 17px/1.2 var(--serif)}.a{color:var(--gris);font-size:13px}
+.st::before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;background:currentColor}
+.vert{color:var(--vert)}.ocre{color:var(--ocre)}.bleu{color:var(--bleu)}.r{color:var(--rouille);font-weight:600}
+.empty{padding:28px;text-align:center;color:var(--gris)}
+.desk{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px}
+.form{background:#fff;border:1px solid var(--trait);padding:24px}
+.form h2{margin:0 0 16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+label{display:block;font-weight:500;font-size:13px;margin-bottom:6px}
+label input{width:100%;display:block;margin-top:6px;font-weight:400}
+#msg{margin-top:12px;min-height:20px;color:var(--rouille);font-weight:500}
+.slot{display:grid;place-items:center;border:1px dashed #9AA2B1;color:var(--gris);padding:24px;text-align:center}
+.stamp{border:2px solid var(--rouille);color:var(--rouille);padding:18px 22px;transform:rotate(-2deg);align-self:center;justify-self:start;background:#fff}
+.stamp small{display:block;font-weight:600}.stamp strong{display:block;font:600 52px/1.05 var(--serif)}.stamp em{display:block;font:italic 16px var(--serif);color:var(--encre);margin-top:6px}
+#pan{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;background:#fff;border-left:1px solid var(--trait);padding:28px;overflow:auto;transform:translateX(100%);transition:transform .2s}
+#pan.open{transform:none;box-shadow:-1px 0 0 var(--trait)}
+#pan h3{font:600 26px/1.15 var(--serif);margin:16px 0 4px}
+dl{display:grid;grid-template-columns:110px 1fr;gap:10px 12px;margin:20px 0;padding-top:16px;border-top:1px solid var(--trait)}
+dt{color:var(--gris)}dd li{list-style:none}
+#toast{position:fixed;left:248px;bottom:24px;background:var(--nuit);color:#fff;padding:12px 18px;max-width:460px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+:root{--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+#cb td:nth-child(2),td.n{font:13px var(--mono)}
+td.n .ghost{font:500 14px var(--sans)}
+body:not(.in){display:block}
+body:not(.in) aside,body:not(.in) main{display:none}
+body.in #auth{display:none}
+#auth{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);min-height:100vh}
+.ah{background:var(--nuit);color:#C9CFDA;padding:40px 48px;display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+.ah .logo{padding:0}
+.ah h2{font:400 38px/1.15 var(--serif);color:#fff;margin:0 0 16px}
+.ah p{max-width:420px;color:#A9B1C0}
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:24px;background:#fff;border:1px solid var(--trait)}
+.rules div{padding:16px 20px;color:var(--gris);border-left:1px solid var(--trait)}.rules div:first-child{border-left:0}
+.rules strong{display:block;font:600 24px/1.2 var(--serif);color:var(--rouille)}
+.ah small{color:#8E97A8}
+.af{display:grid;place-items:center;padding:32px 24px}
+.aw{width:100%;max-width:460px;background:#fff;border:1px solid var(--trait);padding:32px}
+.aw .seg{margin-bottom:24px}.aw .seg button{flex:1}
+.aw h1{font-size:28px}.aw .sub{margin-bottom:20px}
+.aw label{margin-bottom:16px}.aw .row label{margin-bottom:0}
+.pw{display:block;position:relative;margin-top:6px}.pw input{margin-top:0;padding-right:84px}
+.eye{position:absolute;right:0;top:0;bottom:0;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--gris);font-weight:500}
+.eye:hover{color:var(--rouille)}
+label select{width:100%;display:block;margin-top:6px;font-weight:400}
+.aw .ck{display:flex;gap:8px;align-items:center;font-weight:400;margin:0}.ck input{width:auto;margin:0}
+.ac{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.aw a{color:var(--rouille);font-weight:500}
+.aw .btn{width:100%}
+.hint{color:var(--gris);font-size:12.5px;margin:-8px 0 16px}
+.err{min-height:20px;margin-top:12px;color:var(--rouille);font-weight:500}.err.ok{color:var(--vert)}
+.alt{margin-top:16px;padding-top:16px;border-top:1px solid var(--trait);color:var(--gris);text-align:center}
+.out{display:block;margin-top:12px;background:none;border:1px solid #3A4458;color:#C9CFDA;padding:6px 12px;cursor:pointer}.out:hover{background:var(--nuit2);color:#fff}
+nav .mo{display:none}
+@media(max-width:560px){.row{grid-template-columns:1fr}.rules{grid-template-columns:1fr}.rules div{border-left:0;border-top:1px solid var(--trait)}.rules div:first-child{border-top:0}}
+@media(max-width:900px){body{display:block}nav .mo{display:flex}#auth{grid-template-columns:1fr;min-height:0}.ah{padding:20px 16px 4px}.ap,.ah small{display:none}.af{padding:16px}.aw{padding:24px 20px}aside{position:static;height:auto;padding:16px 0 0}.logo{padding-bottom:12px}nav{display:flex;overflow-x:auto}nav button{white-space:nowrap;gap:10px;border-left:0;border-bottom:3px solid transparent}nav button.on{border-bottom-color:var(--rouille)}.me{display:none}main{padding:24px 16px}.desk{grid-template-columns:1fr}#toast{left:16px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ni{display:flex;align-items:center;gap:12px}
+textarea{width:100%;display:block;margin-top:6px;background:#fff;border:1px solid var(--trait);padding:9px 12px;font:inherit;min-height:84px;resize:vertical}
+textarea:focus{border-color:var(--rouille)}
+.cv{width:100%;aspect-ratio:2/3;background-size:cover;background-position:center;overflow:hidden;border:1px solid var(--trait)}
+.cv.g{display:flex;flex-direction:column;justify-content:space-between;padding:14px 12px 12px 18px;color:#fff;box-shadow:inset 6px 0 0 rgba(255,255,255,.22);border-color:transparent}
+.cv.g span{font:600 clamp(13px,1.3vw,17px)/1.15 var(--serif)}.cv.g small{font-size:11px;opacity:.85}
+.cv.th{width:36px;flex:none;box-shadow:inset 3px 0 0 rgba(255,255,255,.22)}.cv.th span,.cv.th small{display:none}
+.tt{display:flex;gap:12px;align-items:center}
+.mos{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:24px 20px}
+.mos .empty{grid-column:1/-1}
+.bk{background:none;border:0;padding:0;text-align:left;cursor:pointer;display:block}
+.bk .cv{margin-bottom:10px;transition:transform .15s}.bk:hover .cv{transform:translateY(-3px)}
+.bk .t{font-size:16px}.bk .a{display:block;margin-bottom:6px}
+.pvw .hint{margin:12px 0 0}.pvw .pc{width:200px}
+.kp{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.kc{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--trait);padding:16px;color:var(--gris);font-size:13px}
+.kc svg.i{width:40px;height:40px;padding:9px;background:var(--nuit);color:#fff;stroke-width:1.6}
+.kc:nth-child(4) svg.i{background:var(--rouille)}
+.kc strong{display:block;font:600 26px/1.1 var(--serif);color:var(--encre)}
+#bd{position:fixed;inset:0;z-index:15;background:rgba(21,27,38,.4);opacity:0;pointer-events:none;transition:opacity .2s}#bd.on{opacity:1;pointer-events:auto}
+#pan{z-index:20;color:var(--encre);visibility:hidden;transition:transform .2s,visibility .2s}#pan.open{visibility:visible}
+#toast{z-index:30}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.ib{padding:6px;display:grid;place-items:center}
+.pc{width:170px}
+.sm{margin:14px 0 0;font:16px/1.55 var(--serif)}
+body:not(.in) #pan,body:not(.in) #bd{display:none}
+[hidden]{display:none!important}
+#vw button{display:flex;align-items:center;gap:8px}
+.bar select{min-width:150px}
+</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol><symbol id="grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol><symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="swap" viewBox="0 0 24 24"><path d="M17 3l4 4-4 4M3 7h18M7 21l-4-4 4-4M21 17H3"/></symbol><symbol id="bookmark" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></symbol><symbol id="coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1-1.3-1.5-3-1.5s-3 .7-3 2 1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2-3-.5-3-1.5"/></symbol><symbol id="chart" viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></symbol><symbol id="users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol><symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></symbol><symbol id="copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12"/><path d="M5 15H4V4h11v1"/></symbol><symbol id="x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol><symbol id="book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol></svg><div id="auth">
+ <section class="ah">
+  <div class="logo"><i>B</i>BiblioTech</div>
+  <div class="ap">
+   <h2>Chaque livre à sa place, chaque retour à sa date.</h2>
+   <p>Catalogue, prêts, réservations et pénalités de retard réunis sur un seul poste de comptoir, pour les bibliothèques municipales, universitaires et scolaires de Côte d’Ivoire.</p>
+  </div>
+  <small>BiblioTech, Abidjan</small>
+ </section>
+ <section class="af"><div class="aw">
+  <div class="seg" role="tablist"><button type="button" id="tin" class="on" role="tab" aria-selected="true" data-g="in">Connexion</button><button type="button" id="tup" role="tab" aria-selected="false" data-g="up">Inscription</button></div>
+  <div id="fin">
+   <h1>Connexion</h1><p class="sub">Accédez au comptoir de votre bibliothèque.</p>
+   <label>Adresse e-mail<input id="li-e" type="email" autocomplete="username" placeholder="nom@bibliotheque.ci"></label>
+   <label>Mot de passe<span class="pw"><input id="li-p" type="password" autocomplete="current-password"><button type="button" class="eye" data-t="li-p">Afficher</button></span></label>
+   <div class="ac"><label class="ck"><input type="checkbox" checked>Rester connecté</label><a href="#" id="forgot">Mot de passe oublié ?</a></div>
+   <button type="button" class="btn" id="bin">Se connecter</button><p class="err" role="alert"></p>
+   <p class="alt">Maquette : tout e-mail valide et un mot de passe de 6 caractères ou plus ouvrent le comptoir.<br>Nouvelle bibliothèque ? <a href="#" data-g="up">Créer un compte</a></p>
+  </div>
+  <div id="fup" hidden>
+   <h1>Inscription</h1><p class="sub">Créez l’espace de votre bibliothèque. Vous en serez l’administrateur.</p>
+   <label>Nom de la bibliothèque<input id="su-b" autocomplete="organization" placeholder="Bibliothèque municipale de Cocody"></label>
+   <div class="row"><label>Type<select id="su-y"><option>Municipale</option><option>Universitaire</option><option>Scolaire</option><option>Associative</option></select></label>
+   <label>Ville<input id="su-v" placeholder="Abidjan"></label></div>
+   <div class="row"><label>Nom complet<input id="su-n" autocomplete="name" placeholder="Salimata Diomandé"></label>
+   <label>Téléphone<input id="su-t" type="tel" autocomplete="tel" placeholder="+225 07 07 12 34 56"></label></div>
+   <label>Adresse e-mail<input id="su-e" type="email" autocomplete="email" placeholder="nom@bibliotheque.ci"></label>
+   <div class="row"><label>Mot de passe<span class="pw"><input id="su-p" type="password" autocomplete="new-password"><button type="button" class="eye" data-t="su-p">Afficher</button></span></label>
+   <label>Confirmation<input id="su-c" type="password" autocomplete="new-password"></label></div>
+   <p class="hint">8 caractères minimum, dont un chiffre.</p>
+   <label class="ck"><input id="su-k" type="checkbox">J’accepte les conditions d’utilisation</label>
+   <button type="button" class="btn" id="bup" style="margin-top:20px">Créer mon compte</button><p class="err" role="alert"></p>
+   <p class="alt">Déjà inscrit ? <a href="#" data-g="in">Se connecter</a></p>
+  </div>
+ </div></section>
+</div>
+<aside>
+ <div class="logo"><i>B</i>BiblioTech</div>
+ <nav id="nav">
+  <button data-v="cat" class="on"><span class="ni"><svg class="i" aria-hidden="true"><use href="#list"/></svg>Catalogue</span></button>
+  <button data-v="add"><span class="ni"><svg class="i" aria-hidden="true"><use href="#plus"/></svg>Ajouter un livre</span></button>
+  <button data-v="emp"><span class="ni"><svg class="i" aria-hidden="true"><use href="#swap"/></svg>Emprunts et retours</span><b id="n-emp"></b></button>
+  <button data-v="res"><span class="ni"><svg class="i" aria-hidden="true"><use href="#bookmark"/></svg>Réservations</span><b id="n-res"></b></button>
+  <button data-v="pen"><span class="ni"><svg class="i" aria-hidden="true"><use href="#coin"/></svg>Pénalités</span></button>
+  <button data-v="sta"><span class="ni"><svg class="i" aria-hidden="true"><use href="#chart"/></svg>Statistiques</span></button>
+  <button data-v="out" class="mo">Déconnexion</button>
+ </nav>
+ <div class="me"><strong id="un"></strong><span id="ul"></span><br>vendredi 16 octobre 2026<button class="out" id="lo">Se déconnecter</button></div>
+</aside>
+<main>
+<section id="cat">
+ <h1>Catalogue</h1><p class="sub" id="csub"></p>
+ <div class="bar"><input id="q" type="search" placeholder="Titre, auteur ou cote" aria-label="Rechercher"><div class="seg" id="seg"></div><select id="kf" aria-label="Catégorie"></select><div class="seg" id="vw"></div></div>
+ <div class="tw"><table><thead><tr><th>Titre</th><th>Cote</th><th>Catégorie</th><th>Exemplaires</th><th>Statut</th></tr></thead><tbody id="cb"></tbody></table></div>
+ <div class="mos" id="mos" hidden></div>
+</section>
+<section id="add" hidden>
+ <h1>Ajouter un livre</h1><p class="sub">Le livre apparaît aussitôt dans le catalogue et dans la mosaïque.</p>
+ <div class="desk">
+  <div class="form"><h2>Nouveau livre</h2>
+   <div class="row"><label>Titre<input id="ab-t" autocomplete="off"></label><label>Auteur<input id="ab-a" autocomplete="off"></label></div>
+   <div class="row"><label>Cote<input id="ab-c" placeholder="843 BAA" autocomplete="off"></label><label>Catégorie<input id="ab-k" list="lk" autocomplete="off"></label></div>
+   <div class="row"><label>Année de publication<input id="ab-y" type="number" min="1000" max="2026"></label><label>Exemplaires<input id="ab-n" type="number" min="1" value="1"></label></div>
+   <label style="margin-bottom:16px">Résumé<textarea id="ab-s"></textarea></label>
+   <label style="margin-bottom:16px">Image de couverture<input id="ab-i" type="file" accept="image/*"></label>
+   <button class="btn" id="ab-go" type="button">Ajouter au catalogue</button><p id="ab-m" class="err" role="alert"></p><datalist id="lk"></datalist></div>
+  <div class="pvw"><div id="ab-p" class="pc"></div><p class="hint">Sans image, une couverture est générée à partir du titre et de l’auteur.</p></div>
+ </div>
+</section>
+<section id="emp" hidden>
+ <h1>Emprunts et retours</h1><p class="sub" id="esub"></p>
+ <div class="desk">
+  <div class="form"><h2>Nouveau prêt</h2>
+   <div class="row"><label>Carte adhérent<input id="fm" list="lm" placeholder="ADH-0287" autocomplete="off"></label>
+   <label>Cote du livre<input id="fb" list="lb" placeholder="843 BAA" autocomplete="off"></label></div>
+   <button class="btn" id="go">Enregistrer le prêt</button><p id="msg" role="status"></p>
+   <datalist id="lm"></datalist><datalist id="lb"></datalist></div>
+  <div id="stamp" class="slot">La date de retour s’affichera ici une fois le prêt enregistré.</div>
+ </div>
+ <h2>Prêts en cours</h2>
+ <div class="tw"><table><thead><tr><th>Adhérent</th><th>Titre</th><th>Emprunté le</th><th>À rendre le</th><th>Échéance</th><th></th></tr></thead><tbody id="eb"></tbody></table></div>
+</section>
+<section id="res" hidden>
+ <h1>Réservations</h1><p class="sub" id="rsub"></p>
+ <div class="tw"><table><thead><tr><th class="n">Rang</th><th>Adhérent</th><th>Titre</th><th>Demandée le</th><th>Situation</th><th></th></tr></thead><tbody id="rb"></tbody></table></div>
+</section>
+<section id="pen" hidden>
+ <h1>Pénalités de retard</h1><p class="sub" id="psub"></p>
+ <div class="rules" id="rules"></div>
+ <div class="tw"><table><thead><tr><th>Adhérent</th><th>Titre</th><th class="n">Retard</th><th class="n">Montant</th><th>Situation</th><th></th></tr></thead><tbody id="pb"></tbody></table></div>
+</section>
+<section id="sta" hidden>
+ <h1>Statistiques</h1><p class="sub" id="ssub"></p>
+ <div class="kp" id="kp"></div>
+ <div class="desk">
+  <div><h2>Livres les plus empruntés</h2><div class="tw"><table><thead><tr><th>Titre</th><th class="n">Prêts</th></tr></thead><tbody id="s1"></tbody></table></div></div>
+  <div><h2>Catégories</h2><div class="tw"><table><thead><tr><th>Catégorie</th><th class="n">Titres</th><th class="n">Exemplaires</th><th class="n">Prêts</th></tr></thead><tbody id="s2"></tbody></table></div></div>
+ </div>
+ <h2>Adhérents les plus actifs</h2>
+ <div class="tw"><table><thead><tr><th>Adhérent</th><th class="n">En cours</th><th class="n">Total des prêts</th><th class="n">Pénalités impayées</th></tr></thead><tbody id="s3"></tbody></table></div>
+</section>
+</main>
+<div id="bd"></div><div id="pan" role="dialog" aria-label="Fiche du livre"></div>
+<div id="toast"></div>
+<script>
+const T=0,TARIF=100,BLOQUE=500,P=14,$=s=>document.querySelector(s);
+const M=[["ADH-0412","Awa Koné"],["ADH-0287","Yao Kouassi"],["ADH-0533","Fatoumata Traoré"],["ADH-0190","Kouamé N’Guessan"],["ADH-0601","Aminata Diallo"],["ADH-0348","Ibrahim Ouattara"],["ADH-0276","Mariam Bamba"],["ADH-0455","Serge Aka"]].map(([id,n])=>({id,n}));
+const B=[["Une si longue lettre","Mariama Bâ","843 BAA","Roman",2],["Les Soleils des indépendances","Ahmadou Kourouma","843 KOU-1","Roman",1],["L’Aventure ambiguë","Cheikh Hamidou Kane","843 KAN","Roman",2],["Allah n’est pas obligé","Ahmadou Kourouma","843 KOU-2","Roman",1],["Petit pays","Gaël Faye","843 FAY","Roman",3],["Cahier d’un retour au pays natal","Aimé Césaire","841 CES","Poésie",1],["Introduction à l’algorithmique","Cormen, Leiserson, Rivest, Stein","005 COR","Informatique",2],["Clean Code","Robert C. Martin","005 MAR","Informatique",1],["Sapiens","Yuval Noah Harari","909 HAR","Histoire",2],["L’Étranger","Albert Camus","843 CAM","Roman",2]].map(([t,a,c,k,n],i)=>({id:i+1,t,a,c,k,n}));
+const L=[["ADH-0412",1,-9],["ADH-0287",4,-3],["ADH-0533",7,2],["ADH-0190",2,5],["ADH-0601",9,9],["ADH-0276",3,0],["ADH-0412",5,-20,-12,0],["ADH-0348",8,-15,-10,1],["ADH-0455",6,7],["ADH-0533",10,11]].map(([m,b,due,ret=null,paid=0],i)=>({id:i+1,m,b,due,ret,paid}));
+const R=[["ADH-0601",2],["ADH-0348",2],["ADH-0533",6],["ADH-0276",4]].map(([m,b],i)=>({id:i+1,m,b,s:"attente",exp:null,req:-5+i}));
+const mem=id=>M.find(x=>x.id==id),bk=id=>B.find(x=>x.id==id);
+const d=o=>new Date(2026,9,16+o).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+const fr=n=>n.toLocaleString("fr-FR")+" FCFA";
+const out=b=>L.filter(l=>l.b==b&&l.ret==null).length;
+const held=b=>R.filter(r=>r.b==b&&r.s=="prete").length;
+const avail=b=>bk(b).n-out(b)-held(b);
+const late=l=>Math.max(0,(l.ret??T)-l.due),fine=l=>late(l)*TARIF;
+const unpaid=m=>L.filter(l=>l.m==m&&l.ret!=null&&!l.paid).reduce((s,l)=>s+fine(l),0);
+const status=b=>avail(b)>0?["Disponible","vert"]:R.some(r=>r.b==b&&r.s=="attente")?["Réservé","ocre"]:["Emprunté","bleu"];
+const st=([t,c])=>`<span class="st ${c}">${t}</span>`;
+const active=()=>R.filter(r=>r.s=="attente"||r.s=="prete");
+let q="",f="Tous",sel=null,tt;
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),4200)}
+function promote(b){const r=R.filter(r=>r.b==b&&r.s=="attente").sort((x,y)=>x.req-y.req)[0];if(r&&avail(b)>0){r.s="prete";r.exp=T+3;return r}}
+function rCat(){
+ const rows=B.filter(b=>(f=="Tous"||status(b.id)[0]==f)&&(kf=="Toutes"||b.k==kf)&&(b.t+b.a+b.c).toLowerCase().includes(q.toLowerCase()));
+ $("#csub").textContent=`${B.length} titres et ${B.reduce((s,b)=>s+b.n,0)} exemplaires, dont ${B.reduce((s,b)=>s+Math.max(0,avail(b.id)),0)} disponibles au comptoir. ${rows.length} affichés.`;
+ $("#seg").innerHTML=["Tous","Disponible","Réservé","Emprunté"].map(x=>`<button class="${x==f?"on":""}">${x}</button>`).join("");
+ $("#kf").innerHTML=["Toutes",...new Set(B.map(b=>b.k))].map(x=>`<option${x==kf?" selected":""}>${x}</option>`).join("");
+ $("#vw").innerHTML=[["Tableau","list"],["Mosaïque","grid"]].map(([x,i])=>`<button class="${x==vw?"on":""}">${ic(i)}${x}</button>`).join("");
+ $("#cat .tw").hidden=vw!="Tableau";$("#mos").hidden=vw!="Mosaïque";
+ $("#cb").innerHTML=rows.map(b=>`<tr class="k" data-b="${b.id}"><td><div class="tt">${cover(b,"th")}<div><div class="t">${b.t}</div><div class="a">${b.a}</div></div></div></td><td>${b.c}</td><td>${b.k}</td><td>${Math.max(0,avail(b.id))} sur ${b.n}</td><td>${st(status(b.id))}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">Aucun livre ne correspond à cette recherche.</td></tr>`;
+ $("#mos").innerHTML=rows.map(b=>`<button class="bk" data-b="${b.id}">${cover(b)}<div class="t">${b.t}</div><div class="a">${b.a}</div>${st(status(b.id))}</button>`).join("")||`<p class="empty">Aucun livre ne correspond à cette recherche.</p>`;
+}
+function rEmp(){
+ const cur=L.filter(l=>l.ret==null).sort((a,b)=>a.due-b.due),lt=cur.filter(l=>l.due<T).length;
+ $("#esub").textContent=`${cur.length} prêts en cours, dont ${lt} en retard. Durée de prêt : ${P} jours.`;
+ $("#eb").innerHTML=cur.map(l=>{const n=l.due-T;return `<tr><td>${mem(l.m).n}<div class="a">${l.m}</div></td><td><span class="t">${bk(l.b).t}</span></td><td>${d(l.due-P)}</td><td>${d(l.due)}</td><td>${n<0?`<span class="r">Retard de ${-n} j</span>`:n==0?`<b class="ocre">Aujourd’hui</b>`:`dans ${n} j`}</td><td class="n"><button class="ghost" data-r="${l.id}">Enregistrer le retour</button></td></tr>`}).join("");
+ $("#lm").innerHTML=M.map(m=>`<option value="${m.id}" label="${m.n}">`).join("");
+ $("#lb").innerHTML=B.map(b=>`<option value="${b.c}" label="${b.t}">`).join("");
+}
+function rRes(){
+ const a=active();
+ $("#rsub").textContent=`${a.length} demandes actives, dont ${a.filter(r=>r.s=="prete").length} à retirer au comptoir. Un exemplaire rendu est gardé 3 jours.`;
+ $("#rb").innerHTML=a.map(r=>{const rank=R.filter(x=>x.b==r.b&&x.s=="attente"&&x.req<=r.req).length;return `<tr><td class="n">${r.s=="prete"?"—":rank}</td><td>${mem(r.m).n}</td><td><span class="t">${bk(r.b).t}</span></td><td>${d(r.req)}</td><td>${r.s=="prete"?`<b class="vert">À retirer avant le ${d(r.exp)}</b>`:"En attente, tous les exemplaires sont prêtés"}</td><td class="n"><button class="ghost" data-c="${r.id}">Annuler</button></td></tr>`}).join("")||`<tr><td colspan="6" class="empty">Aucune réservation en cours.</td></tr>`;
+}
+function rPen(){
+ $("#rules").innerHTML=[[P+" jours","de prêt par livre"],[TARIF+" FCFA","par jour de retard"],["3 jours","pour retirer un livre réservé"]].map(([a,b])=>`<div><strong>${a}</strong>${b}</div>`).join("");
+ const rows=L.filter(l=>fine(l)>0).sort((a,b)=>(a.paid-b.paid)||fine(b)-fine(a));
+ const due=L.filter(l=>l.ret!=null&&!l.paid).reduce((s,l)=>s+fine(l),0),run=L.filter(l=>l.ret==null).reduce((s,l)=>s+fine(l),0);
+ $("#psub").textContent=`${TARIF} FCFA par jour de retard. ${fr(due)} à encaisser, ${fr(run)} en cours de calcul sur des livres non rendus. Prêt bloqué dès ${fr(BLOQUE)} impayés.`;
+ $("#pb").innerHTML=rows.map(l=>`<tr><td>${mem(l.m).n}<div class="a">${l.m}</div></td><td><span class="t">${bk(l.b).t}</span></td><td class="n">${late(l)} j</td><td class="n"><b>${fr(fine(l))}</b></td><td>${l.ret==null?st(["Non rendu, le montant augmente","ocre"]):l.paid?st(["Réglée","vert"]):st(["À encaisser","bleu"])}</td><td class="n">${l.ret!=null&&!l.paid?`<button class="ghost" data-p="${l.id}">Encaisser</button>`:""}</td></tr>`).join("");
+}
+const PAL=["#252E3E","#B4441F","#2D6A4F","#2F4F8F","#8F6609","#5A3E6B"],ic=n=>`<svg class="i" aria-hidden="true"><use href="#${n}"/></svg>`,esc=s=>s.replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
+const cover=(b,c="")=>b.img?`<div class="cv ${c}" role="img" aria-label="Couverture de ${b.t}" style="background-image:url('${b.img}')"></div>`:`<div class="cv g ${c}" style="background-color:${PAL[b.id%6]}"><span>${b.t}</span><small>${b.a}</small></div>`;
+let kf="Toutes",vw="Tableau",img="";
+function pv(){$("#ab-p").innerHTML=cover({id:B.length+1,t:esc(V("ab-t"))||"Titre du livre",a:esc(V("ab-a"))||"Auteur",img})}
+function rAdd(){$("#lk").innerHTML=[...new Set(B.map(b=>b.k))].map(k=>`<option value="${k}">`).join("");pv()}
+function rSta(){
+ const cur=L.filter(l=>l.ret==null),lt=cur.filter(l=>l.due<T).length,n=b=>L.filter(l=>l.b==b).length,due=L.filter(l=>l.ret!=null&&!l.paid).reduce((s,l)=>s+fine(l),0),
+ K=[["book","Titres",B.length],["copy","Exemplaires",B.reduce((s,b)=>s+b.n,0)],["swap","Prêts en cours",cur.length],["clock","Prêts en retard",lt],["bookmark","Réservations actives",active().length],["check","Retours enregistrés",L.length-cur.length],["users","Adhérents",M.length],["coin","À encaisser",fr(due)]];
+ $("#ssub").textContent=`Situation au ${d(0)}, d’après les prêts, réservations et pénalités enregistrés.`;
+ $("#kp").innerHTML=K.map(([i,l,v])=>`<div class="kc">${ic(i)}<div><strong>${v}</strong>${l}</div></div>`).join("");
+ $("#s1").innerHTML=B.map(b=>[b,n(b.id)]).sort((x,y)=>y[1]-x[1]).slice(0,5).map(([b,c])=>`<tr><td><div class="tt">${cover(b,"th")}<div><div class="t">${b.t}</div><div class="a">${b.a}</div></div></div></td><td class="n">${c}</td></tr>`).join("");
+ $("#s2").innerHTML=[...new Set(B.map(b=>b.k))].map(k=>{const bs=B.filter(b=>b.k==k);return `<tr><td>${k}</td><td class="n">${bs.length}</td><td class="n">${bs.reduce((s,b)=>s+b.n,0)}</td><td class="n">${bs.reduce((s,b)=>s+n(b.id),0)}</td></tr>`}).join("");
+ $("#s3").innerHTML=M.map(m=>[m,L.filter(l=>l.m==m.id)]).filter(x=>x[1].length).sort((x,y)=>y[1].length-x[1].length).map(([m,ls])=>`<tr><td>${m.n}<div class="a">${m.id}</div></td><td class="n">${ls.filter(l=>l.ret==null).length}</td><td class="n">${ls.length}</td><td class="n">${fr(unpaid(m.id))}</td></tr>`).join("");
+}
+function rPan(){
+ const p=$("#pan"),was=p.classList.contains("open");$("#bd").classList.toggle("on",!!sel);if(!sel){p.classList.remove("open");return}
+ const b=bk(sel),bor=L.filter(l=>l.b==b.id&&l.ret==null),q=R.filter(r=>r.b==b.id&&(r.s=="attente"||r.s=="prete"));
+ p.innerHTML=`<div class="ph"><span class="a">Fiche du livre</span><button class="ghost ib" id="x" aria-label="Fermer la fiche">${ic("x")}</button></div>
+ <div class="pc">${cover(b)}</div><h3>${b.t}</h3><div class="a">${b.a}</div>${st(status(b.id))}${b.s?`<p class="sm">${b.s}</p>`:""}
+ <dl><dt>Cote</dt><dd>${b.c}</dd><dt>Catégorie</dt><dd>${b.k}</dd>${b.y?`<dt>Année</dt><dd>${b.y}</dd>`:""}<dt>Disponibles</dt><dd>${Math.max(0,avail(b.id))} sur ${b.n}</dd>
+ <dt>Emprunté par</dt><dd>${bor.map(l=>`<li>${mem(l.m).n}, retour le ${d(l.due)}</li>`).join("")||"Personne"}</dd>
+ <dt>Réservations</dt><dd>${q.map(r=>`<li>${mem(r.m).n}${r.s=="prete"?" (à retirer)":""}</li>`).join("")||"Aucune"}</dd></dl>
+ <label>Réserver pour<select id="rm" style="width:100%;margin-top:6px">${M.map(m=>`<option value="${m.id}">${m.n}</option>`).join("")}</select></label>
+ <button class="btn" id="rg" style="margin-top:12px">Réserver ce livre</button>`;
+ p.classList.add("open");if(!was)$("#x").focus();
+}
+function all(){rCat();rAdd();rEmp();rRes();rPen();rSta();rPan();$("#n-emp").textContent=L.filter(l=>l.ret==null&&l.due<T).length;$("#n-res").textContent=active().length}
+function ret(id){
+ const l=L.find(x=>x.id==id);l.ret=T;let m=late(l)?`Retour enregistré. Pénalité de ${fr(fine(l))} pour ${mem(l.m).n}.`:"Retour enregistré, sans retard.";
+ const r=promote(l.b);if(r)m+=` Réservation de ${mem(r.m).n} prête, à retirer avant le ${d(r.exp)}.`;
+ toast(m);all();
+}
+function loan(){
+ const m=mem($("#fm").value.trim().toUpperCase()),b=B.find(x=>x.c.toLowerCase()==$("#fb").value.trim().toLowerCase()),e=$("#msg");e.textContent="";
+ if(!m)return e.textContent="Carte adhérent inconnue.";
+ if(!b)return e.textContent="Cote introuvable dans le catalogue.";
+ if(unpaid(m.id)>=BLOQUE)return e.textContent=`Prêt bloqué : ${fr(unpaid(m.id))} de pénalités impayées. Rendez-vous à l’onglet Pénalités.`;
+ const own=R.find(r=>r.b==b.id&&r.m==m.id&&r.s=="prete");
+ if(!own&&avail(b.id)<=0)return e.textContent="Aucun exemplaire disponible. Enregistrez une réservation depuis le catalogue.";
+ if(own)own.s="honoree";
+ L.push({id:L.length+1,m:m.id,b:b.id,due:T+P,ret:null,paid:0});
+ $("#stamp").className="stamp";$("#stamp").innerHTML=`<small>À rendre avant le</small><strong>${d(T+P)}</strong><em>${b.t}, pour ${m.n}</em>`;
+ $("#fm").value=$("#fb").value="";all();
+}
+$("#nav").onclick=e=>{const v=e.target.closest("button")?.dataset.v;if(!v)return;if(v=="out")return leave();document.querySelectorAll("main section").forEach(s=>s.hidden=s.id!=v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v==v));sel=null;rPan()};
+$("#q").oninput=e=>{q=e.target.value;rCat()};
+$("#seg").onclick=e=>{if(e.target.tagName=="BUTTON"){f=e.target.textContent;rCat()}};
+$("#cb").onclick=e=>{const t=e.target.closest("tr");if(t?.dataset.b){sel=+t.dataset.b;rPan()}};
+$("#eb").onclick=e=>{const i=e.target.dataset.r;if(i)ret(+i)};
+$("#rb").onclick=e=>{const i=e.target.dataset.c;if(!i)return;const r=R.find(x=>x.id==i),was=r.s=="prete";r.s="annulee";if(was)promote(r.b);toast("Réservation annulée.");all()};
+$("#pb").onclick=e=>{const i=e.target.dataset.p;if(!i)return;const l=L.find(x=>x.id==i);l.paid=1;toast(`${fr(fine(l))} encaissés auprès de ${mem(l.m).n}.`);all()};
+$("#pan").onclick=e=>{
+ if(e.target.closest("#x")){sel=null;rPan()}
+ if(e.target.id=="rg"){const m=$("#rm").value;if(avail(sel)>0)return toast("Un exemplaire est disponible : enregistrez plutôt le prêt.");
+  if(R.some(r=>r.b==sel&&r.m==m&&(r.s=="attente"||r.s=="prete")))return toast("Cet adhérent a déjà réservé ce livre.");
+  R.push({id:R.length+1,m,b:sel,s:"attente",exp:null,req:T});toast(`Réservation enregistrée pour ${mem(m).n}.`);all()}};
+$("#kf").onchange=e=>{kf=e.target.value;rCat()};
+$("#vw").onclick=e=>{const b=e.target.closest("button");if(b){vw=b.textContent;rCat()}};
+$("#mos").onclick=e=>{const t=e.target.closest("[data-b]");if(t){sel=+t.dataset.b;rPan()}};
+$("#bd").onclick=()=>{sel=null;rPan()};
+["ab-t","ab-a"].forEach(i=>$("#"+i).oninput=pv);
+$("#ab-i").onchange=e=>{const f=e.target.files[0],m=$("#ab-m");m.textContent="";if(!f)return;if(f.size>3e6)return m.textContent="Image trop lourde : 3 Mo maximum.";const r=new FileReader();r.onload=()=>{img=r.result;pv()};r.readAsDataURL(f)};
+$("#ab-go").onclick=()=>{
+ const t=V("ab-t"),a=V("ab-a"),c=V("ab-c"),k=V("ab-k"),n=+V("ab-n"),y=V("ab-y"),m=$("#ab-m");
+ const err=!t?"Indiquez le titre.":!a?"Indiquez l’auteur.":!c?"Indiquez la cote.":B.some(b=>b.c.toLowerCase()==c.toLowerCase())?"Cette cote existe déjà dans le catalogue.":!k?"Indiquez la catégorie.":!(n>=1)?"Le nombre d’exemplaires doit être d’au moins 1.":"";
+ if(err)return m.textContent=err;
+ B.push({id:B.length+1,t:esc(t),a:esc(a),c:esc(c),k:esc(k),n,y,s:esc(V("ab-s")),img});
+ ["ab-t","ab-a","ab-c","ab-k","ab-y","ab-s","ab-i"].forEach(i=>$("#"+i).value="");$("#ab-n").value=1;img="";m.textContent="";
+ toast(`« ${t} » ajouté au catalogue.`);all()};
+$("#go").onclick=loan;
+document.addEventListener("keydown",e=>{if(e.key=="Enter"&&e.target.closest("#emp .form"))loan();if(e.key=="Escape"){sel=null;rPan()}});
+const em=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v),V=id=>$("#"+id).value.trim();
+function note(f,t,ok){const p=$("#"+f+" .err");p.textContent=t;p.className="err"+(ok?" ok":"")}
+function view(v){["in","up"].forEach(k=>{$("#t"+k).classList.toggle("on",k==v);$("#t"+k).setAttribute("aria-selected",k==v);$("#f"+k).hidden=k!=v});note("fin","");note("fup","")}
+function enter(a,b){$("#un").textContent=a;$("#ul").textContent=b;document.body.classList.add("in");document.querySelector("nav [data-v=cat]").click();scrollTo(0,0)}
+function leave(){document.body.classList.remove("in");sel=null;rPan();document.querySelectorAll("#auth input").forEach(i=>i.type=="checkbox"?i.checked=i.defaultChecked:i.value="");$("#su-y").selectedIndex=0;document.querySelectorAll(".eye").forEach(b=>{b.textContent="Afficher";$("#"+b.dataset.t).type="password"});view("in")}
+$("#auth").onclick=e=>{const t=e.target,i=t.dataset.t&&$("#"+t.dataset.t);
+ if(i){const h=i.type=="password";i.type=h?"text":"password";t.textContent=h?"Masquer":"Afficher"}
+ if(t.dataset.g){e.preventDefault();view(t.dataset.g)}
+ if(t.id=="forgot"){e.preventDefault();const m=V("li-e");em(m)?note("fin",`Un lien de réinitialisation a été envoyé à ${m}.`,1):note("fin","Saisissez votre e-mail ci-dessus pour recevoir le lien.")}};
+function login(){
+ if(!em(V("li-e")))return note("fin","Saisissez une adresse e-mail valide.");
+ if($("#li-p").value.length<6)return note("fin","Le mot de passe doit contenir au moins 6 caractères.");
+ enter("Salimata D., comptoir 1","Bibliothèque centrale")}
+function signup(){const p=$("#su-p").value,
+ err=!V("su-b")?"Indiquez le nom de la bibliothèque.":!V("su-n")?"Indiquez votre nom complet.":!/^(\+225)?\d{10}$/.test(V("su-t").replace(/\s/g,""))?"Numéro de téléphone invalide : 10 chiffres, avec ou sans +225.":!em(V("su-e"))?"Saisissez une adresse e-mail valide.":p.length<8||!/\d/.test(p)?"Mot de passe : 8 caractères minimum, dont un chiffre.":p!=$("#su-c").value?"Les deux mots de passe ne correspondent pas.":!$("#su-k").checked?"Acceptez les conditions d’utilisation pour continuer.":"";
+ if(err)return note("fup",err);enter(V("su-n")+", administrateur",V("su-b"))}
+$("#bin").onclick=login;$("#bup").onclick=signup;
+document.addEventListener("keydown",e=>{if(e.key=="Enter"&&e.target.tagName=="INPUT"){if(e.target.closest("#fin"))login();if(e.target.closest("#fup"))signup()}});
+$("#lo").onclick=leave;
+all();
+</script></body></html>

@@ -1,0 +1,19 @@
+@if (book(); as book) {
+<div class="ph"><span class="a">Fiche du livre</span><button type="button" #closeButton class="ghost ib" aria-label="Fermer la fiche" (click)="close()"><svg class="i" aria-hidden="true"><use href="#x"/></svg></button></div>
+<div class="pc"><app-cover [book]="book"/></div><h3>{{ book.t }}</h3><div class="a">{{ book.a }}</div><span class="st" [class]="status()!.c">{{ status()!.t }}</span>
+@if (book.s) {
+<p class="sm">{{ book.s }}</p>
+}
+<dl>
+ <dt>Cote</dt><dd>{{ book.c }}</dd>
+ <dt>Catégorie</dt><dd>{{ book.k }}</dd>
+ @if (book.y) {
+ <dt>Année</dt><dd>{{ book.y }}</dd>
+ }
+ <dt>Disponibles</dt><dd>{{ available() }} sur {{ book.n }}</dd>
+ <dt>Emprunté par</dt><dd>@for (loan of borrowers(); track loan.id) {<li>{{ memberName(loan.m) }}, retour le {{ fmt(loan.due) }}</li>}@empty {Personne}</dd>
+ <dt>Réservations</dt><dd>@for (reservation of waiting(); track reservation.id) {<li>{{ memberName(reservation.m) }}{{ reservation.s === 'prete' ? ' (à retirer)' : '' }}</li>}@empty {Aucune}</dd>
+</dl>
+<label>Réserver pour<select style="width:100%;margin-top:6px" [value]="memberId()" (change)="memberId.set(inputValue($event))">@for (member of members(); track member.id) {<option [value]="member.id">{{ member.n }}</option>}</select></label>
+<button type="button" class="btn" style="margin-top:12px" (click)="reserve()">Réserver ce livre</button>
+}

@@ -1,0 +1,22 @@
+<section id="sta">
+ <h1>Statistiques</h1><p class="sub">{{ subtitle() }}</p>
+ <div class="kp">@for (kpi of kpis(); track kpi.label) {<div class="kc"><svg class="i" aria-hidden="true"><use [attr.href]="'#' + kpi.icon"/></svg><div><strong>{{ kpi.value }}</strong>{{ kpi.label }}</div></div>}</div>
+ <div class="desk">
+  <div><h2>Livres les plus empruntés</h2><div class="tw"><table><thead><tr><th>Titre</th><th class="n">Prêts</th></tr></thead><tbody>
+   @for (entry of topBooks(); track entry.book.id) {
+    <tr><td><div class="tt"><app-cover [book]="entry.book" variant="th"/><div><div class="t">{{ entry.book.t }}</div><div class="a">{{ entry.book.a }}</div></div></div></td><td class="n">{{ entry.count }}</td></tr>
+   }
+  </tbody></table></div></div>
+  <div><h2>Catégories</h2><div class="tw"><table><thead><tr><th>Catégorie</th><th class="n">Titres</th><th class="n">Exemplaires</th><th class="n">Prêts</th></tr></thead><tbody>
+   @for (category of categories(); track category.k) {
+    <tr><td>{{ category.k }}</td><td class="n">{{ category.titles }}</td><td class="n">{{ category.copies }}</td><td class="n">{{ category.loans }}</td></tr>
+   }
+  </tbody></table></div></div>
+ </div>
+ <h2>Adhérents les plus actifs</h2>
+ <div class="tw"><table><thead><tr><th>Adhérent</th><th class="n">En cours</th><th class="n">Total des prêts</th><th class="n">Pénalités impayées</th></tr></thead><tbody>
+  @for (entry of activeMembers(); track entry.member.id) {
+   <tr><td>{{ entry.member.n }}<div class="a">{{ entry.member.id }}</div></td><td class="n">{{ entry.current }}</td><td class="n">{{ entry.total }}</td><td class="n">{{ fmtFcfa(entry.due) }}</td></tr>
+  }
+ </tbody></table></div>
+</section>

@@ -1,0 +1,9 @@
+<section id="pen">
+ <h1>Pénalités de retard</h1><p class="sub">{{ subtitle() }}</p>
+ <div class="rules">@for (rule of rules; track rule[0]) {<div><strong>{{ rule[0] }}</strong>{{ rule[1] }}</div>}</div>
+ <div class="tw"><table><thead><tr><th>Adhérent</th><th>Titre</th><th class="n">Retard</th><th class="n">Montant</th><th>Situation</th><th></th></tr></thead><tbody>
+  @for (loan of rows(); track loan.id) {
+   <tr><td>{{ memberName(loan.m) }}<div class="a">{{ loan.m }}</div></td><td><span class="t">{{ bookTitle(loan.b) }}</span></td><td class="n">{{ delay(loan) }} j</td><td class="n"><b>{{ fmtFcfa(fine(loan)) }}</b></td><td><span class="st" [class]="situation(loan).c">{{ situation(loan).t }}</span></td><td class="n">@if (loan.ret !== null && !loan.paid) {<button type="button" class="ghost" (click)="pay(loan.id)">Encaisser</button>}</td></tr>
+  }
+ </tbody></table></div>
+</section>

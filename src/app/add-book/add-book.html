@@ -1,0 +1,13 @@
+<section id="add">
+ <h1>Ajouter un livre</h1><p class="sub">Le livre apparaît aussitôt dans le catalogue et dans la mosaïque.</p>
+ <div class="desk">
+  <div class="form"><h2>Nouveau livre</h2>
+   <div class="row"><label>Titre<input autocomplete="off" [value]="t()" (input)="t.set(inputValue($event))"></label><label>Auteur<input autocomplete="off" [value]="a()" (input)="a.set(inputValue($event))"></label></div>
+   <div class="row"><label>Cote<input placeholder="843 BAA" autocomplete="off" [value]="c()" (input)="c.set(inputValue($event))"></label><label>Catégorie<input list="lk" autocomplete="off" [value]="k()" (input)="k.set(inputValue($event))"></label></div>
+   <div class="row"><label>Année de publication<input type="number" min="1000" max="2026" [value]="y()" (input)="y.set(inputValue($event))"></label><label>Exemplaires<input type="number" min="1" [value]="n()" (input)="n.set(inputValue($event))"></label></div>
+   <label style="margin-bottom:16px">Résumé<textarea [value]="s()" (input)="s.set(inputValue($event))"></textarea></label>
+   <label style="margin-bottom:16px">Image de couverture<input #fileInput type="file" accept="image/*" (change)="onFile($event)"></label>
+   <button class="btn" type="button" (click)="submit()">Ajouter au catalogue</button><p class="err" role="alert">{{ message() }}</p><datalist id="lk">@for (category of categories(); track category) {<option [value]="category"></option>}</datalist></div>
+  <div class="pvw"><div class="pc"><app-cover [book]="previewBook()"/></div><p class="hint">Sans image, une couverture est générée à partir du titre et de l’auteur.</p></div>
+ </div>
+</section>

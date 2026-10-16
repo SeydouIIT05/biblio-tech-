@@ -1,0 +1,37 @@
+<section class="ah">
+ <div class="logo"><i>B</i>BiblioTech</div>
+ <div class="ap">
+  <h2>Chaque livre à sa place, chaque retour à sa date.</h2>
+  <p>Catalogue, prêts, réservations et pénalités de retard réunis sur un seul poste de comptoir, pour les bibliothèques municipales, universitaires et scolaires de Côte d’Ivoire.</p>
+ </div>
+ <small>BiblioTech, Abidjan</small>
+</section>
+<section class="af"><div class="aw">
+ <div class="seg" role="tablist"><button type="button" role="tab" [class.on]="tab() === 'in'" [attr.aria-selected]="tab() === 'in'" (click)="setTab('in')">Connexion</button><button type="button" role="tab" [class.on]="tab() === 'up'" [attr.aria-selected]="tab() === 'up'" (click)="setTab('up')">Inscription</button></div>
+ @if (tab() === 'in') {
+ <div id="fin">
+  <h1>Connexion</h1><p class="sub">Accédez au comptoir de votre bibliothèque.</p>
+  <label>Adresse e-mail<input type="email" autocomplete="username" placeholder="nom@bibliotheque.ci" [value]="email()" (input)="email.set(inputValue($event))" (keydown.enter)="login()"></label>
+  <label>Mot de passe<span class="pw"><input [type]="showIn() ? 'text' : 'password'" autocomplete="current-password" [value]="password()" (input)="password.set(inputValue($event))" (keydown.enter)="login()"><button type="button" class="eye" (click)="showIn.set(!showIn())">{{ showIn() ? 'Masquer' : 'Afficher' }}</button></span></label>
+  <div class="ac"><label class="ck"><input type="checkbox" checked>Rester connecté</label><a href="#" (click)="forgot($event)">Mot de passe oublié ?</a></div>
+  <button type="button" class="btn" (click)="login()">Se connecter</button><p class="err" [class.ok]="errInOk()" role="alert">{{ errIn() }}</p>
+  <p class="alt">Maquette : tout e-mail valide et un mot de passe de 6 caractères ou plus ouvrent le comptoir.<br>Nouvelle bibliothèque ? <a href="#" (click)="goUp($event)">Créer un compte</a></p>
+ </div>
+ } @else {
+ <div id="fup">
+  <h1>Inscription</h1><p class="sub">Créez l’espace de votre bibliothèque. Vous en serez l’administrateur.</p>
+  <label>Nom de la bibliothèque<input autocomplete="organization" placeholder="Bibliothèque municipale de Cocody" [value]="sB()" (input)="sB.set(inputValue($event))" (keydown.enter)="signup()"></label>
+  <div class="row"><label>Type<select [value]="sY()" (change)="sY.set(inputValue($event))"><option>Municipale</option><option>Universitaire</option><option>Scolaire</option><option>Associative</option></select></label>
+  <label>Ville<input placeholder="Abidjan" [value]="sV()" (input)="sV.set(inputValue($event))" (keydown.enter)="signup()"></label></div>
+  <div class="row"><label>Nom complet<input autocomplete="name" placeholder="Salimata Diomandé" [value]="sN()" (input)="sN.set(inputValue($event))" (keydown.enter)="signup()"></label>
+  <label>Téléphone<input type="tel" autocomplete="tel" placeholder="+225 07 07 12 34 56" [value]="sT()" (input)="sT.set(inputValue($event))" (keydown.enter)="signup()"></label></div>
+  <label>Adresse e-mail<input type="email" autocomplete="email" placeholder="nom@bibliotheque.ci" [value]="sE()" (input)="sE.set(inputValue($event))" (keydown.enter)="signup()"></label>
+  <div class="row"><label>Mot de passe<span class="pw"><input [type]="showUp() ? 'text' : 'password'" autocomplete="new-password" [value]="sP()" (input)="sP.set(inputValue($event))" (keydown.enter)="signup()"><button type="button" class="eye" (click)="showUp.set(!showUp())">{{ showUp() ? 'Masquer' : 'Afficher' }}</button></span></label>
+  <label>Confirmation<input type="password" autocomplete="new-password" [value]="sC()" (input)="sC.set(inputValue($event))" (keydown.enter)="signup()"></label></div>
+  <p class="hint">8 caractères minimum, dont un chiffre.</p>
+  <label class="ck"><input type="checkbox" [checked]="sK()" (change)="sK.set(checkedValue($event))">J’accepte les conditions d’utilisation</label>
+  <button type="button" class="btn" style="margin-top:20px" (click)="signup()">Créer mon compte</button><p class="err" role="alert">{{ errUp() }}</p>
+  <p class="alt">Déjà inscrit ? <a href="#" (click)="goIn($event)">Se connecter</a></p>
+ </div>
+ }
+</div></section>

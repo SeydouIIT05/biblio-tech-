@@ -1,0 +1,10 @@
+<section id="res">
+ <h1>Réservations</h1><p class="sub">{{ active().length }} demandes actives, dont {{ ready().length }} à retirer au comptoir. Un exemplaire rendu est gardé 3 jours.</p>
+ <div class="tw"><table><thead><tr><th class="n">Rang</th><th>Adhérent</th><th>Titre</th><th>Demandée le</th><th>Situation</th><th></th></tr></thead><tbody>
+  @for (reservation of active(); track reservation.id) {
+   <tr><td class="n">{{ reservation.s === 'prete' ? '—' : rank(reservation) }}</td><td>{{ memberName(reservation.m) }}</td><td><span class="t">{{ bookTitle(reservation.b) }}</span></td><td>{{ fmt(reservation.req) }}</td><td>@if (reservation.s === 'prete') {<b class="vert">À retirer avant le {{ fmt(reservation.exp ?? 0) }}</b>}@else {En attente, tous les exemplaires sont prêtés}</td><td class="n"><button type="button" class="ghost" (click)="cancel(reservation.id)">Annuler</button></td></tr>
+  } @empty {
+   <tr><td colspan="6" class="empty">Aucune réservation en cours.</td></tr>
+  }
+ </tbody></table></div>
+</section>

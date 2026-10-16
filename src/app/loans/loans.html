@@ -1,0 +1,21 @@
+<section id="emp">
+ <h1>Emprunts et retours</h1><p class="sub">{{ currentLoans().length }} prêts en cours, dont {{ overdue() }} en retard. Durée de prêt : {{ duration() }} jours.</p>
+ <div class="desk">
+  <div class="form"><h2>Nouveau prêt</h2>
+   <div class="row"><label>Carte adhérent<input list="lm" placeholder="ADH-0287" autocomplete="off" [value]="card()" (input)="card.set(inputValue($event))" (keydown.enter)="submit()"></label>
+   <label>Cote du livre<input list="lb" placeholder="843 BAA" autocomplete="off" [value]="cote()" (input)="cote.set(inputValue($event))" (keydown.enter)="submit()"></label></div>
+   <button type="button" class="btn" (click)="submit()">Enregistrer le prêt</button><p id="msg" role="status">{{ message() }}</p>
+   <datalist id="lm">@for (member of members(); track member.id) {<option [value]="member.id" [label]="member.n"></option>}</datalist><datalist id="lb">@for (book of books(); track book.id) {<option [value]="book.c" [label]="book.t"></option>}</datalist></div>
+  @if (stamp(); as stamp) {
+   <div class="stamp"><small>À rendre avant le</small><strong>{{ stamp.date }}</strong><em>{{ stamp.title }}, pour {{ stamp.member }}</em></div>
+  } @else {
+   <div class="slot">La date de retour s’affichera ici une fois le prêt enregistré.</div>
+  }
+ </div>
+ <h2>Prêts en cours</h2>
+ <div class="tw"><table><thead><tr><th>Adhérent</th><th>Titre</th><th>Emprunté le</th><th>À rendre le</th><th>Échéance</th><th></th></tr></thead><tbody>
+  @for (loan of currentLoans(); track loan.id) {
+   <tr><td>{{ memberName(loan.m) }}<div class="a">{{ loan.m }}</div></td><td><span class="t">{{ bookTitle(loan.b) }}</span></td><td>{{ borrowedOn(loan) }}</td><td>{{ fmt(loan.due) }}</td><td>@if (countdown(loan) < 0) {<span class="r">Retard de {{ -countdown(loan) }} j</span>}@else if (countdown(loan) === 0) {<b class="ocre">Aujourd’hui</b>}@else {dans {{ countdown(loan) }} j}</td><td class="n"><button type="button" class="ghost" (click)="returnLoan(loan.id)">Enregistrer le retour</button></td></tr>
+  }
+ </tbody></table></div>
+</section>
