@@ -12,19 +12,20 @@
     <option [value]="category">{{ category }}</option>
    }
   </select>
-  <div class="seg">
+  <div class="seg" id="vw">
    @for (item of layouts; track item.label) {
     <button type="button" [class.on]="layout() === item.label" (click)="layout.set(item.label)"><svg class="i" aria-hidden="true"><use [attr.href]="'#' + item.icon"/></svg>{{ item.label }}</button>
    }
   </div>
  </div>
  @if (layout() === 'Tableau') {
- <div class="tw"><table><thead><tr><th>Titre</th><th>Cote</th><th>Catégorie</th><th>Exemplaires</th><th>Statut</th></tr></thead><tbody>
+ <div class="tw"><table><thead><tr><th>Titre</th><th>Cote</th><th>Catégorie</th><th>Exemplaires</th><th>Statut</th></tr></thead><tbody id="cb">
   @for (book of rows(); track book.id) {
+   @let s = status(book);
    <tr class="k" (click)="open(book.id)">
     <td><div class="tt"><app-cover [book]="book" variant="th"/><div><div class="t">{{ book.t }}</div><div class="a">{{ book.a }}</div></div></div></td>
     <td>{{ book.c }}</td><td>{{ book.k }}</td><td>{{ available(book) }} sur {{ book.n }}</td>
-    <td><span class="st" [class]="status(book).c">{{ status(book).t }}</span></td>
+    <td><span class="st" [class]="s.c"><svg class="i" aria-hidden="true"><use [attr.href]="'#' + s.i"/></svg>{{ s.t }}</span></td>
    </tr>
   } @empty {
    <tr><td colspan="5" class="empty">Aucun livre ne correspond à cette recherche.</td></tr>
@@ -33,7 +34,8 @@
  } @else {
  <div class="mos">
   @for (book of rows(); track book.id) {
-   <button type="button" class="bk" (click)="open(book.id)"><app-cover [book]="book"/><div class="t">{{ book.t }}</div><div class="a">{{ book.a }}</div><span class="st" [class]="status(book).c">{{ status(book).t }}</span></button>
+   @let s = status(book);
+   <button type="button" class="bk" (click)="open(book.id)"><app-cover [book]="book"/><div class="t">{{ book.t }}</div><div class="a">{{ book.a }}</div><span class="st" [class]="s.c"><svg class="i" aria-hidden="true"><use [attr.href]="'#' + s.i"/></svg>{{ s.t }}</span></button>
   } @empty {
    <p class="empty">Aucun livre ne correspond à cette recherche.</p>
   }

@@ -89,13 +89,14 @@ describe('règles de prêt', () => {
 
   it('détermine les trois statuts', () => {
     const b = book(1, 1);
-    expect(bookStatus(b, [], [])).toEqual({ t: 'Disponible', c: 'vert' });
+    expect(bookStatus(b, [], [])).toEqual({ t: 'Disponible', c: 'vert', i: 'check' });
     expect(bookStatus(b, [loan(1, 'ADH-0412', 1, 3)], [reservation(1, 'ADH-0601', 1)])).toEqual(
-      { t: 'Réservé', c: 'ocre' },
+      { t: 'Réservé', c: 'ocre', i: 'bookmark' },
     );
     expect(bookStatus(b, [loan(1, 'ADH-0412', 1, 3)], [])).toEqual({
       t: 'Emprunté',
       c: 'bleu',
+      i: 'swap',
     });
   });
 });

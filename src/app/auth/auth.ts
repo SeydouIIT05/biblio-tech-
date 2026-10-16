@@ -16,6 +16,7 @@ export class Auth {
   protected readonly email = signal('');
   protected readonly password = signal('');
   protected readonly showIn = signal(false);
+  protected readonly remember = signal(true);
   protected readonly errIn = signal('');
   protected readonly errInOk = signal(false);
 
@@ -69,7 +70,7 @@ export class Auth {
   }
 
   protected login(): void {
-    const error = this.store.login(this.email().trim(), this.password());
+    const error = this.store.login(this.email().trim(), this.password(), this.remember());
     if (error) {
       this.errIn.set(error);
       this.errInOk.set(false);

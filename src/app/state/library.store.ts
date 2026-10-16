@@ -1,4 +1,12 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Inject, Injectable, Optional, Signal, WritableSignal, computed, signal } from '@angular/core';
+import {
+  LIBRARY_PERSISTENCE,
+  LibraryPersistence,
+  STORAGE_KEYS,
+  readJson,
+  removeKey,
+  writeJson,
+} from './persistence';
 import {
   Book,
   Loan,
@@ -41,9 +49,38 @@ export interface Stamp {
 
 const PROMOTION_OFFSET = T + 3;
 const TOAST_DURATION = 4200;
+const VIEWS: ViewId[] = ['cat', 'add', 'emp', 'res', 'pen', 'sta'];
+const STORAGE_FULL =
+  'Stockage du navigateur plein : les dernières modifications ne seront pas conservées au rechargement.';
+
+interface SavedSession extends Session {
+  view: ViewId;
+}
+
+function isSavedSession(value: unknown): value is SavedSession {
+  const s = value as SavedSession | null;
+  return typeof s?.user === 'string' && typeof s.place === 'string';
+}
+
+function isLibraryState(value: unknown): value is LibraryState {
+  const d = value as LibraryState | null;
+  return (
+    Array.isArray(d?.members) &&
+    Array.isArray(d.books) &&
+    Array.isArray(d.loans) &&
+    Array.isArray(d.reservations)
+  );
+}
 
 @Injectable({ providedIn: 'root' })
 export class LibraryStore {
+  private readonly persistence: LibraryPersistence | null;
+  private readonly _restored: WritableSignal<boolean>;
+  private remember = true;
+
+  /** Faux tant que l'état enregistré dans le navigateur n'a pas été relu. */
+  readonly restored: Signal<boolean>;
+
   private readonly _members = signal<Member[]>(MEMBERS.map((m) => ({ ...m })));
   private readonly _books = signal<Book[]>(BOOKS.map((b) => ({ ...b })));
   private readonly _loans = signal<Loan[]>(LOANS.map((l) => ({ ...l })));
@@ -99,6 +136,53 @@ export class LibraryStore {
     };
   });
 
+  constructor(
+    @Optional() @Inject(LIBRARY_PERSISTENCE) persistence: LibraryPersistence | null = null,
+  ) {
+    this.persistence = persistence;
+    this._restored = signal(persistence === null);
+    this.restored = this._restored.asReadonly();
+  }
+
+  /** Relit les données, la session et la vue enregistrées par le navigateur. */
+  restore(): void {
+    if (this._restored() || !this.persistence) return;
+    const { local, session } = this.persistence;
+    const data = readJson(local, STORAGE_KEYS.data);
+    if (isLibraryState(data)) {
+      this._members.set(data.members);
+      this._books.set(data.books);
+      this._loans.set(data.loans);
+      this._reservations.set(data.reservations);
+    }
+    const kept = readJson(local, STORAGE_KEYS.session);
+    const saved = isSavedSession(kept) ? kept : readJson(session, STORAGE_KEYS.session);
+    if (isSavedSession(saved)) {
+      this.remember = saved === kept;
+      this._session.set({ user: saved.user, place: saved.place });
+      if (VIEWS.includes(saved.view)) this._view.set(saved.view);
+    }
+    this._restored.set(true);
+  }
+
+  private saveData(): void {
+    if (!this.persistence || !this._restored()) return;
+    if (!writeJson(this.persistence.local, STORAGE_KEYS.data, this.snapshot())) {
+      this.showToast(STORAGE_FULL);
+    }
+  }
+
+  private saveSession(): void {
+    if (!this.persistence || !this._restored()) return;
+    const { local, session } = this.persistence;
+    removeKey(local, STORAGE_KEYS.session);
+    removeKey(session, STORAGE_KEYS.session);
+    const current = this._session();
+    if (!current) return;
+    const saved: SavedSession = { ...current, view: this._view() };
+    writeJson(this.remember ? local : session, STORAGE_KEYS.session, saved);
+  }
+
   snapshot(): LibraryState {
     return {
       members: this._members(),
@@ -118,6 +202,7 @@ export class LibraryStore {
   setView(view: ViewId): void {
     this._view.set(view);
     this._selectedBookId.set(null);
+    this.saveSession();
   }
 
   selectBook(id: number): void {
@@ -128,21 +213,24 @@ export class LibraryStore {
     this._selectedBookId.set(null);
   }
 
-  enter(user: string, place: string): void {
+  enter(user: string, place: string, remember = true): void {
+    this.remember = remember;
     this._session.set({ user, place });
     this._view.set('cat');
     this._selectedBookId.set(null);
+    this.saveSession();
   }
 
   leave(): void {
     this._session.set(null);
     this._selectedBookId.set(null);
+    this.saveSession();
   }
 
-  login(email: string, password: string): string {
+  login(email: string, password: string, remember = true): string {
     const error = loginError(email, password);
     if (error) return error;
-    this.enter('Salimata D., comptoir 1', 'Bibliothèque centrale');
+    this.enter('Salimata D., comptoir 1', 'Bibliothèque centrale', remember);
     return '';
   }
 
@@ -173,6 +261,7 @@ export class LibraryStore {
       },
     ]);
     this.showToast(`« ${input.t} » ajouté au catalogue.`);
+    this.saveData();
     return '';
   }
 
@@ -197,6 +286,7 @@ export class LibraryStore {
     ]);
     this._stamp.set({ date: fmtDate(T + P), title: book.t, member: member.n });
     this._loanMessage.set('');
+    this.saveData();
     return '';
   }
 
@@ -213,6 +303,7 @@ export class LibraryStore {
       message += ` Réservation de ${this.memberName(promoted.m)} prête, à retirer avant le ${fmtDate(promoted.exp!)}.`;
     }
     this.showToast(message);
+    this.saveData();
   }
 
   private promote(bookId: number): Reservation | undefined {
@@ -242,6 +333,7 @@ export class LibraryStore {
     );
     if (wasReady) this.promote(reservation.b);
     this.showToast('Réservation annulée.');
+    this.saveData();
   }
 
   reserve(bookId: number, memberId: string): void {
@@ -269,6 +361,7 @@ export class LibraryStore {
       { id: rs.length + 1, m: memberId, b: bookId, s: 'attente', exp: null, req: T },
     ]);
     this.showToast(`Réservation enregistrée pour ${this.memberName(memberId)}.`);
+    this.saveData();
   }
 
   payFine(id: number): void {
@@ -277,6 +370,7 @@ export class LibraryStore {
     if (!loan) return;
     this._loans.update((ls) => ls.map((l) => (l.id === id ? { ...l, paid: 1 } : l)));
     this.showToast(`${fr(fine(loan))} encaissés auprès de ${this.memberName(loan.m)}.`);
+    this.saveData();
   }
 
   memberName(id: string): string {

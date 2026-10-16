@@ -66,9 +66,9 @@ export class Penalties {
   }
 
   protected situation(loan: Loan): Status {
-    if (loan.ret === null) return { t: 'Non rendu, le montant augmente', c: 'ocre' };
-    if (loan.paid) return { t: 'Réglée', c: 'vert' };
-    return { t: 'À encaisser', c: 'bleu' };
+    if (loan.ret === null) return { t: 'Non rendu, le montant augmente', c: 'ocre', i: 'clock' };
+    if (loan.paid) return { t: 'Réglée', c: 'vert', i: 'check' };
+    return { t: 'À encaisser', c: 'bleu', i: 'coin' };
   }
 
   protected pay(id: number): void {

@@ -24,6 +24,21 @@ describe('Catalogue', () => {
     expect(rows()).toBe(10);
   });
 
+  it('affiche un pictogramme coloré devant chaque statut', () => {
+    const icon = (status: string): string | null | undefined =>
+      [...fixture.nativeElement.querySelectorAll('#cb .st')]
+        .find((s: Element) => s.textContent?.trim() === status)
+        ?.querySelector('use')
+        ?.getAttribute('href');
+    expect(icon('Disponible')).toBe('#check');
+    expect(icon('Réservé')).toBe('#bookmark');
+  });
+
+  it('accroche les styles de la maquette aux boutons Tableau / Mosaïque et à la cote', () => {
+    expect(el('#vw')?.querySelectorAll('button svg').length).toBe(2);
+    expect(el('#cb tr td:nth-child(2)')?.textContent).toBe('843 BAA');
+  });
+
   it('filtre par recherche combinée', () => {
     const search = el<HTMLInputElement>('input[type=search]')!;
     search.value = 'kourouma';

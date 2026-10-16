@@ -73,6 +73,8 @@ export function unpaid(loans: Loan[], memberId: string): number {
 export interface Status {
   t: string;
   c: string;
+  /** Identifiant du pictogramme dans le sprite SVG de app.html. */
+  i: string;
 }
 
 export function bookStatus(
@@ -80,10 +82,10 @@ export function bookStatus(
   loans: Loan[],
   reservations: Reservation[],
 ): Status {
-  if (avail(book, loans, reservations) > 0) return { t: 'Disponible', c: 'vert' };
+  if (avail(book, loans, reservations) > 0) return { t: 'Disponible', c: 'vert', i: 'check' };
   if (reservations.some((r) => r.b === book.id && r.s === 'attente'))
-    return { t: 'Réservé', c: 'ocre' };
-  return { t: 'Emprunté', c: 'bleu' };
+    return { t: 'Réservé', c: 'ocre', i: 'bookmark' };
+  return { t: 'Emprunté', c: 'bleu', i: 'swap' };
 }
 
 export function activeReservations(reservations: Reservation[]): Reservation[] {

@@ -1,6 +1,6 @@
 @if (book(); as book) {
 <div class="ph"><span class="a">Fiche du livre</span><button type="button" #closeButton class="ghost ib" aria-label="Fermer la fiche" (click)="close()"><svg class="i" aria-hidden="true"><use href="#x"/></svg></button></div>
-<div class="pc"><app-cover [book]="book"/></div><h3>{{ book.t }}</h3><div class="a">{{ book.a }}</div><span class="st" [class]="status()!.c">{{ status()!.t }}</span>
+<div class="pc"><app-cover [book]="book"/></div><h3>{{ book.t }}</h3><div class="a">{{ book.a }}</div><span class="st" [class]="status()!.c"><svg class="i" aria-hidden="true"><use [attr.href]="'#' + status()!.i"/></svg>{{ status()!.t }}</span>
 @if (book.s) {
 <p class="sm">{{ book.s }}</p>
 }

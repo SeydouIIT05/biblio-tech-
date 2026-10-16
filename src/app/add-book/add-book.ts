@@ -3,6 +3,33 @@ import { Cover } from '../cover/cover';
 import { LibraryStore } from '../state/library.store';
 
 const MAX_IMAGE_BYTES = 3e6;
+const COVER_WIDTH = 400;
+const COVER_HEIGHT = 600;
+
+/** Réduit la couverture en JPEG 400×600 maximum pour qu'elle tienne dans le stockage du navigateur. */
+function shrinkCover(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onerror = () => resolve(dataUrl);
+    image.onload = () => {
+      const scale = Math.min(1, COVER_WIDTH / image.naturalWidth, COVER_HEIGHT / image.naturalHeight);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = canvas.getContext('2d');
+      if (!context) return resolve(dataUrl);
+      context.fillStyle = '#fff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      try {
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch {
+        resolve(dataUrl);
+      }
+    };
+    image.src = dataUrl;
+  });
+}
 
 @Component({
   selector: 'app-add-book',
@@ -50,7 +77,7 @@ export class AddBook {
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => this.img.set(reader.result as string);
+    reader.onload = async () => this.img.set(await shrinkCover(reader.result as string));
     reader.readAsDataURL(file);
   }
 

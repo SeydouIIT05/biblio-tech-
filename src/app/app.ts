@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, afterNextRender, effect, inject } from '@angular/core';
 import { AddBook } from './add-book/add-book';
 import { Auth } from './auth/auth';
 import { BookPanel } from './book-panel/book-panel';
@@ -19,6 +19,8 @@ export class App {
   protected readonly store = inject(LibraryStore);
 
   constructor() {
+    // La page est prérendue sans session : on ne relit le navigateur qu'après l'hydratation.
+    afterNextRender(() => this.store.restore());
     effect(() => {
       const connected = this.store.session() !== null;
       if (typeof document !== 'undefined') {
