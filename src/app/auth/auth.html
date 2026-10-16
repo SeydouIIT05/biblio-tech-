@@ -14,8 +14,8 @@
   <label>Adresse e-mail<input type="email" autocomplete="username" placeholder="nom@bibliotheque.ci" [value]="email()" (input)="email.set(inputValue($event))" (keydown.enter)="login()"></label>
   <label>Mot de passe<span class="pw"><input [type]="showIn() ? 'text' : 'password'" autocomplete="current-password" [value]="password()" (input)="password.set(inputValue($event))" (keydown.enter)="login()"><button type="button" class="eye" (click)="showIn.set(!showIn())">{{ showIn() ? 'Masquer' : 'Afficher' }}</button></span></label>
   <div class="ac"><label class="ck"><input type="checkbox" [checked]="remember()" (change)="remember.set(checkedValue($event))">Rester connecté</label><a href="#" (click)="forgot($event)">Mot de passe oublié ?</a></div>
-  <button type="button" class="btn" (click)="login()">Se connecter</button><p class="err" [class.ok]="errInOk()" role="alert">{{ errIn() }}</p>
-  <p class="alt">Maquette : tout e-mail valide et un mot de passe de 6 caractères ou plus ouvrent le comptoir.<br>Nouvelle bibliothèque ? <a href="#" (click)="goUp($event)">Créer un compte</a></p>
+  <button type="button" class="btn" [disabled]="busy()" (click)="login()">{{ busy() ? 'Connexion…' : 'Se connecter' }}</button><p class="err" [class.ok]="errInOk()" role="alert">{{ errIn() }}</p>
+  <p class="alt">Nouvelle bibliothèque ? <a href="#" (click)="goUp($event)">Créer un compte</a></p>
  </div>
  } @else {
  <div id="fup">
@@ -30,7 +30,7 @@
   <label>Confirmation<input type="password" autocomplete="new-password" [value]="sC()" (input)="sC.set(inputValue($event))" (keydown.enter)="signup()"></label></div>
   <p class="hint">8 caractères minimum, dont un chiffre.</p>
   <label class="ck"><input type="checkbox" [checked]="sK()" (change)="sK.set(checkedValue($event))">J’accepte les conditions d’utilisation</label>
-  <button type="button" class="btn" style="margin-top:20px" (click)="signup()">Créer mon compte</button><p class="err" role="alert">{{ errUp() }}</p>
+  <button type="button" class="btn" style="margin-top:20px" [disabled]="busy()" (click)="signup()">{{ busy() ? 'Création du compte…' : 'Créer mon compte' }}</button><p class="err" role="alert">{{ errUp() }}</p>
   <p class="alt">Déjà inscrit ? <a href="#" (click)="goIn($event)">Se connecter</a></p>
  </div>
  }

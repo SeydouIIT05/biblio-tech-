@@ -41,20 +41,32 @@ describe('Auth', () => {
     expect(el<HTMLButtonElement>('#fin .eye').textContent).toContain('Masquer');
   });
 
-  it('renseigne le message « Mot de passe oublié »', () => {
+  const settle = async (): Promise<void> => {
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+
+  it('renvoie vers l’administrateur pour un mot de passe oublié', () => {
     type('#fin input[type=email]', 'salimata@biblio.ci');
     el<HTMLAnchorElement>('#fin .ac a').click();
     fixture.detectChanges();
-    expect(el('#fin .err').textContent).toContain(
-      'Un lien de réinitialisation a été envoyé à salimata@biblio.ci.',
+    expect(el('#fin .err').textContent).toBe(
+      'Contactez l’administrateur de votre bibliothèque pour réinitialiser votre mot de passe.',
     );
-    expect(el('#fin .err').classList.contains('ok')).toBe(true);
+    expect(el('#fin .err').classList.contains('ok')).toBe(false);
   });
 
-  it('refuse puis accepte une connexion', () => {
+  it('affiche le message d’une session expirée', () => {
+    vi.spyOn(store, 'consumeAuthNotice').mockReturnValue('Votre session a expiré : reconnectez-vous.');
+    fixture = TestBed.createComponent(Auth);
+    fixture.detectChanges();
+    expect(el('#fin .err').textContent).toBe('Votre session a expiré : reconnectez-vous.');
+  });
+
+  it('refuse puis accepte une connexion', async () => {
     type('#fin input[type=email]', 'pas-un-email');
     el<HTMLButtonElement>('#fin .btn').click();
-    fixture.detectChanges();
+    await settle();
     expect(el('#fin .err').textContent).toBe(
       'Saisissez une adresse e-mail valide.',
     );
@@ -75,11 +87,11 @@ describe('Auth', () => {
     expect(store.session()).not.toBeNull();
   });
 
-  it('refuse puis accepte une inscription', () => {
+  it('refuse puis accepte une inscription', async () => {
     el<HTMLButtonElement>('.seg button:nth-child(2)').click();
     fixture.detectChanges();
     el<HTMLButtonElement>('#fup .btn').click();
-    fixture.detectChanges();
+    await settle();
     expect(el('#fup .err').textContent).toBe(
       'Indiquez le nom de la bibliothèque.',
     );

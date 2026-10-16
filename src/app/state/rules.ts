@@ -134,6 +134,9 @@ export function loginError(email: string, password: string): string {
 
 export interface SignupInput {
   b: string;
+  /** Type de bibliothèque et ville : enregistrés avec le compte, sans validation. */
+  y?: string;
+  v?: string;
   n: string;
   t: string;
   e: string;

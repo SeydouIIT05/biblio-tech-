@@ -134,17 +134,17 @@ describe('LibraryStore — pénalités', () => {
 });
 
 describe('LibraryStore — authentification', () => {
-  it('ouvre une session après connexion valide', () => {
+  it('ouvre une session après connexion valide', async () => {
     const store = new LibraryStore();
-    expect(store.login('salimata@biblio.ci', 'secret')).toBe('');
+    await expect(store.login('salimata@biblio.ci', 'secret')).resolves.toBe('');
     expect(store.session()?.user).toBe('Salimata D., comptoir 1');
     expect(store.session()?.place).toBe('Bibliothèque centrale');
     expect(store.view()).toBe('cat');
   });
 
-  it('refuse une connexion invalide', () => {
+  it('refuse une connexion invalide', async () => {
     const store = new LibraryStore();
-    expect(store.login('x', 'y')).toBe(
+    await expect(store.login('x', 'y')).resolves.toBe(
       'Saisissez une adresse e-mail valide.',
     );
     expect(store.session()).toBeNull();

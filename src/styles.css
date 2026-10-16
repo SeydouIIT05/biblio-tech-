@@ -25,7 +25,7 @@ input:focus{border-color:var(--rouille)}
 .seg button{background:#fff;border:1px solid var(--trait);margin-left:-1px;padding:9px 16px;cursor:pointer}
 .seg button.on{background:var(--nuit);border-color:var(--nuit);color:#fff;position:relative}
 .btn{background:var(--rouille);color:#fff;border:0;padding:10px 18px;font-weight:600;cursor:pointer}
-.btn:hover{background:#963816}
+.btn:hover{background:#963816}.btn:disabled{opacity:.7;cursor:wait}
 .ghost{background:#fff;border:1px solid var(--encre);padding:6px 12px;cursor:pointer;font-weight:500}
 .ghost:hover{background:var(--encre);color:#fff}
 .tw{overflow-x:auto}
@@ -87,7 +87,6 @@ label select{width:100%;display:block;margin-top:6px;font-weight:400}
 .err{min-height:20px;margin-top:12px;color:var(--rouille);font-weight:500}.err.ok{color:var(--vert)}
 .alt{margin-top:16px;padding-top:16px;border-top:1px solid var(--trait);color:var(--gris);text-align:center}
 .out+.out{margin-top:8px}
-.sy{display:flex;align-items:center;gap:6px;margin-top:6px}.sy::before{content:"";width:7px;height:7px;border-radius:50%;background:#8E97A8}.sy.on::before{background:#52B788}
 .out{display:block;margin-top:12px;background:none;border:1px solid #3A4458;color:#C9CFDA;padding:6px 12px;cursor:pointer}.out:hover{background:var(--nuit2);color:#fff}
 nav .mo{display:none}
 @media(max-width:560px){.row{grid-template-columns:1fr}.rules{grid-template-columns:1fr}.rules div{border-left:0;border-top:1px solid var(--trait)}.rules div:first-child{border-top:0}}

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Optional, Signal, WritableSignal, computed, signal } from '@angular/core';
-import { LIBRARY_BACKEND, LibraryBackend } from './backend';
+import { AccountSession, LIBRARY_BACKEND, LibraryBackend, UNAUTHORIZED } from './backend';
 import {
   LIBRARY_PERSISTENCE,
   LibraryPersistence,
@@ -67,6 +67,7 @@ function demoState(): LibraryState {
 
 interface SavedSession extends Session {
   view: ViewId;
+  token?: string;
 }
 
 function isSavedSession(value: unknown): value is SavedSession {
@@ -90,6 +91,7 @@ export class LibraryStore {
   private readonly backend: LibraryBackend | null;
   private readonly _restored: WritableSignal<boolean>;
   private remember = true;
+  private token: string | null = null;
   private remoteVersion = 0;
   private reachable = false;
   private pushing = false;
@@ -103,7 +105,7 @@ export class LibraryStore {
   private readonly _books = signal<Book[]>(this.demo.books);
   private readonly _loans = signal<Loan[]>(this.demo.loans);
   private readonly _reservations = signal<Reservation[]>(this.demo.reservations);
-  private readonly _synced = signal(false);
+  private authNotice = '';
 
   private readonly _session = signal<Session | null>(null);
   private readonly _view = signal<ViewId>('cat');
@@ -128,8 +130,6 @@ export class LibraryStore {
   readonly loanMessage = this._loanMessage.asReadonly();
   readonly addMessage = this._addMessage.asReadonly();
   readonly stamp = this._stamp.asReadonly();
-  /** Vrai quand le dernier échange avec le serveur a réussi. */
-  readonly synced = this._synced.asReadonly();
 
   readonly selectedBook = computed<Book | null>(() => {
     const id = this._selectedBookId();
@@ -173,8 +173,10 @@ export class LibraryStore {
     if (isLibraryState(data)) this.applyData(data);
     const kept = readJson(local, STORAGE_KEYS.session);
     const saved = isSavedSession(kept) ? kept : readJson(session, STORAGE_KEYS.session);
-    if (isSavedSession(saved)) {
+    // Avec un serveur, une session sans jeton (ancienne version) ne vaut rien.
+    if (isSavedSession(saved) && (!this.backend || typeof saved.token === 'string')) {
       this.remember = saved === kept;
+      this.token = saved.token ?? null;
       this._session.set({ user: saved.user, place: saved.place });
       if (VIEWS.includes(saved.view)) this._view.set(saved.view);
     }
@@ -182,17 +184,15 @@ export class LibraryStore {
     void this.pull();
   }
 
-  /** Récupère l'état partagé du serveur ; une base vide reçoit les données de ce poste. */
+  /** Récupère l'état de la bibliothèque du compte ; une bibliothèque vide reçoit les données de démonstration. */
   async pull(): Promise<void> {
-    if (!this.backend || !this._restored() || this.pushing) return;
-    const remote = await this.backend.load();
-    if (!remote) {
-      this._synced.set(false);
-      return;
-    }
-    if (this.pushing) return;
+    if (!this.backend || !this.token || !this._restored() || this.pushing) return;
+    const token = this.token;
+    const remote = await this.backend.load(token);
+    if (token !== this.token) return;
+    if (remote === UNAUTHORIZED) return this.expire();
+    if (!remote || this.pushing) return;
     this.reachable = true;
-    this._synced.set(true);
     if (!isLibraryState(remote.data)) {
       this.remoteVersion = remote.version;
       await this.push();
@@ -205,21 +205,19 @@ export class LibraryStore {
   }
 
   private async push(): Promise<void> {
-    if (!this.backend || !this.reachable) return;
+    if (!this.backend || !this.token || !this.reachable) return;
     if (this.pushing) {
       this.pushAgain = true;
       return;
     }
     this.pushing = true;
+    const token = this.token;
     try {
       do {
         this.pushAgain = false;
-        const result = await this.backend.save(this.remoteVersion, this.snapshot());
-        if (!result) {
-          this._synced.set(false);
-          return;
-        }
-        this._synced.set(true);
+        const result = await this.backend.save(token, this.remoteVersion, this.snapshot());
+        if (token !== this.token || !result) return;
+        if (result === UNAUTHORIZED) return this.expire();
         if (!result.ok) {
           this.remoteVersion = result.current.version;
           if (isLibraryState(result.current.data)) this.applyData(result.current.data);
@@ -269,7 +267,7 @@ export class LibraryStore {
     removeKey(session, STORAGE_KEYS.session);
     const current = this._session();
     if (!current) return;
-    const saved: SavedSession = { ...current, view: this._view() };
+    const saved: SavedSession = { ...current, view: this._view(), ...(this.token ? { token: this.token } : {}) };
     writeJson(this.remember ? local : session, STORAGE_KEYS.session, saved);
   }
 
@@ -312,23 +310,82 @@ export class LibraryStore {
   }
 
   leave(): void {
+    const token = this.token;
+    this.token = null;
+    if (token) void this.backend?.logout(token);
     this._session.set(null);
     this._selectedBookId.set(null);
     this.saveSession();
+    if (this.backend) {
+      // Les données appartiennent au compte : rien ne reste sur ce poste après la déconnexion.
+      this.applyData(demoState());
+      this.remoteVersion = 0;
+      this.reachable = false;
+      removeKey(this.persistence?.local ?? null, STORAGE_KEYS.data);
+    }
   }
 
-  login(email: string, password: string, remember = true): string {
+  private expire(): void {
+    this.leave();
+    this.authNotice = 'Votre session a expiré : reconnectez-vous.';
+  }
+
+  /** Message à afficher sur l'écran de connexion (session expirée), lu une seule fois. */
+  consumeAuthNotice(): string {
+    const notice = this.authNotice;
+    this.authNotice = '';
+    return notice;
+  }
+
+  /**
+   * Connexion par le serveur. Sans serveur (tests unitaires), la connexion fictive de la maquette
+   * est conservée : tout e-mail valide et 6 caractères ouvrent le comptoir.
+   */
+  async login(email: string, password: string, remember = true): Promise<string> {
     const error = loginError(email, password);
     if (error) return error;
-    this.enter('Salimata D., comptoir 1', 'Bibliothèque centrale', remember);
+    if (!this.backend) {
+      this.enter('Salimata D., comptoir 1', 'Bibliothèque centrale', remember);
+      return '';
+    }
+    const result = await this.backend.login(email, password, remember);
+    if (!result.ok) return result.error;
+    await this.openSession(result.session, remember);
     return '';
   }
 
-  signup(input: SignupInput): string {
+  /** Création du compte administrateur et de l'espace de sa bibliothèque. */
+  async signup(input: SignupInput): Promise<string> {
     const error = signupError(input);
     if (error) return error;
-    this.enter(input.n.trim() + ', administrateur', input.b.trim());
+    if (!this.backend) {
+      this.enter(input.n.trim() + ', administrateur', input.b.trim());
+      return '';
+    }
+    const result = await this.backend.signup(
+      {
+        library: input.b.trim(),
+        type: input.y ?? 'Municipale',
+        city: (input.v ?? '').trim(),
+        name: input.n.trim(),
+        phone: input.t.trim(),
+        email: input.e.trim(),
+        password: input.p,
+      },
+      true,
+    );
+    if (!result.ok) return result.error;
+    await this.openSession(result.session, true);
     return '';
+  }
+
+  private async openSession(session: AccountSession, remember: boolean): Promise<void> {
+    this.token = session.token;
+    this.remoteVersion = 0;
+    this.reachable = false;
+    this.applyData(demoState());
+    await this.pull();
+    this.enter(session.user, session.place, remember);
   }
 
   addBook(input: AddBookInput): string {
