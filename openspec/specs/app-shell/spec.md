@@ -27,11 +27,15 @@ Le système SHALL afficher à côté de « Emprunts et retours » le nombre de p
 - **THEN** l'entrée « Emprunts et retours » affiche « 2 » et « Réservations » affiche le nombre de demandes actives
 
 ### Requirement: Pied d'écran utilisateur et date
-Le système SHALL afficher dans le pied de la barre le nom de session, son rôle/lieu, la date de référence du jeu de démonstration (« vendredi 16 octobre 2026 ») et un bouton « Se déconnecter » ; ce pied SHALL être masqué sur petit écran.
+Le système SHALL afficher dans le pied de la barre le nom de session, son rôle/lieu, la date de référence du jeu de démonstration (« vendredi 16 octobre 2026 »), un indicateur de sauvegarde (« Données partagées sur le serveur » avec une pastille verte quand le dernier échange avec l'API a réussi, « Données gardées dans ce navigateur » sinon), un bouton « Se déconnecter » et un bouton « Réinitialiser la démo » ; ce pied SHALL être masqué sur petit écran.
 
 #### Scenario: Session connectée
 - **WHEN** l'utilisateur est connecté sur un écran large
-- **THEN** le pied montre le nom de session, « Bibliothèque centrale », la date fixe et le bouton de déconnexion
+- **THEN** le pied montre le nom de session, « Bibliothèque centrale », la date fixe, l'indicateur de sauvegarde et les deux boutons
+
+#### Scenario: Base reliée
+- **WHEN** l'API a répondu avec succès
+- **THEN** l'indicateur affiche « Données partagées sur le serveur »
 
 ### Requirement: Notification toast
 Le système SHALL afficher un toast sombre en bas à gauche (décalé de la barre latérale) pour chaque retour, réservation, encaissement ou ajout signalé, et le SHALL masquer automatiquement après environ 4 secondes ; un nouveau toast SHALL remplacer le précédent.

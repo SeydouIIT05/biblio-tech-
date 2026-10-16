@@ -82,3 +82,10 @@ Le système SHALL afficher dans l'espace d'aperçu la couverture qui sera créé
 #### Scenario: Saisie du titre
 - **WHEN** l'utilisateur tape le titre et l'auteur
 - **THEN** l'aperçu montre une couverture avec ces textes, avec un libellé par défaut si un champ est vide
+
+### Requirement: Pictogramme de statut
+Le système SHALL afficher devant chaque statut de livre (tableau, mosaïque, fiche) un pictogramme de la couleur du statut : une coche pour « Disponible », un marque-page pour « Réservé », deux flèches d'échange pour « Emprunté ».
+
+#### Scenario: Catalogue au repos
+- **WHEN** le catalogue s'affiche en vue tableau
+- **THEN** « Une si longue lettre » montre une coche verte devant « Disponible » et « Les Soleils des indépendances » un marque-page ocre devant « Réservé »

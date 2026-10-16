@@ -31,4 +31,4 @@
 ## 5. Mise en production
 
 - [x] 5.1 Vérifier en local : tests Angular et API, build de production, parcours complet avec l'API en mémoire
-- [ ] 5.2 Relier une base Upstash for Redis (offre gratuite) au projet Vercel, redéployer et vérifier que l'indicateur affiche « Données partagées sur le serveur »
+- [x] 5.2 Relier une base Upstash for Redis (offre gratuite) au projet Vercel, redéployer et vérifier que l'indicateur affiche « Données partagées sur le serveur »
